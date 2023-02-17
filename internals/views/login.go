@@ -59,13 +59,13 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 	)
 	itemPasswd := widget.NewPasswordEntry()
 
-	rememberInfo := widget.NewCheckWithData("Remember Info", binding.BindBool(&app.UserConfig.RemeberMe))
+	rememberInfo := widget.NewCheckWithData("Remember Info", binding.BindBool(&app.UserConfig.RememberMe))
 	rememberInfo.OnChanged = func(checked bool) {
 		if checked {
 			app.UserConfig = &utils.UserConfig{
 				ServerURI:      itemServerURI.Text,
 				PrivateKeyPath: itemPrivateKeyPath.Text,
-				RemeberMe:      checked,
+				RememberMe:     checked,
 			}
 			if err := app.SaveConfig(); err != nil {
 				errMsg := fmt.Sprintf("There was error while saving user settings: %s", err)
