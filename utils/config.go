@@ -10,7 +10,7 @@ import (
 type UserConfig struct {
 	ServerURI      string `json:"server_uri"`
 	PrivateKeyPath string `json:"private_key_path"`
-	RemeberMe      bool   `json:"remeber_me"`
+	RememberMe     bool   `json:"remember_me"`
 }
 
 func NewUserConfig() (*UserConfig, error) {
@@ -19,7 +19,7 @@ func NewUserConfig() (*UserConfig, error) {
 	config := UserConfig{
 		ServerURI:      "",
 		PrivateKeyPath: "",
-		RemeberMe:      false,
+		RememberMe:      false,
 	}
 
 	file, err := json.Marshal(config)
