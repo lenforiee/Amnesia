@@ -15,15 +15,15 @@ var (
 func InitialiseLogging(logFile string) {
 	tempDir := os.TempDir()
 
-	_, err := os.Stat(fmt.Sprintf("%s/passbolt-gui", tempDir))
+	_, err := os.Stat(fmt.Sprintf("%s/amnesia", tempDir))
 	if os.IsNotExist(err) {
-		err = os.Mkdir(fmt.Sprintf("%s/passbolt-gui", tempDir), 0755)
+		err = os.Mkdir(fmt.Sprintf("%s/amnesia", tempDir), 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	file, err := os.OpenFile(fmt.Sprintf("%s/passbolt-gui/%s", tempDir, logFile), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(fmt.Sprintf("%s/amnesia/%s", tempDir, logFile), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}

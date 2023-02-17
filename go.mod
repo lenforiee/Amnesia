@@ -1,4 +1,4 @@
-module github.com/lenforiee/PassboltGUI
+module github.com/lenforiee/AmnesiaGUI
 
 go 1.20
 
@@ -38,7 +38,7 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/tevino/abool v1.2.0 // indirect
-	github.com/yuin/goldmark v1.4.0 // indirect
+	github.com/yuin/goldmark v1.4.13 // indirect
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/image v0.0.0-20220601225756-64ec528b34cd // indirect

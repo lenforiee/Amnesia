@@ -5,38 +5,49 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
 )
 
-type ErrorWindow struct {
+type ConfirmWindow struct {
 	Window    *fyne.Window
+	OnYes     func()
 	Container *fyne.Container
 }
 
-func NewErrorWindow(app *controllers.AppContext, err string) *ErrorWindow {
+func NewConfirmWindow(app *controllers.AppContext, msg string) *ConfirmWindow {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Error", app.AppName))
-	view := &ErrorWindow{
+	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Confirm", app.AppName))
+	view := &ConfirmWindow{
 		Window:    &window,
 		Container: nil,
 	}
-	errorLabel := widget.NewLabelWithStyle("Error has occured!",
+	errorLabel := widget.NewLabelWithStyle("Warning!",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
-	errorInfo := widget.NewLabel(err)
+	errorInfo := widget.NewLabel(msg)
 	errorInfo.Wrapping = fyne.TextWrapWord
 
-	button := widget.NewButton("OK", func() {
+	yesBtn := widget.NewButton("Yes", func() {
+		(*view.Window).Close()
+		(*view).OnYes()
+	})
+
+	noBtn := widget.NewButton("No", func() {
 		(*view.Window).Close()
 	})
 
 	containerBox := container.NewBorder(
 		errorLabel,
-		button,
+		container.New(
+			layout.NewGridLayout(2),
+			yesBtn,
+			noBtn,
+		),
 		nil,
 		nil,
 		errorInfo,

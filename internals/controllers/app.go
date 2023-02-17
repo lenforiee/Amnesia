@@ -6,11 +6,12 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
-	"github.com/lenforiee/PassboltGUI/utils"
+	"github.com/lenforiee/AmnesiaGUI/utils"
 	"github.com/passbolt/go-passbolt/api"
 )
 
 type AppContext struct {
+	AppName        string
 	MainWindow     *fyne.Window
 	App            *fyne.App
 	Context        *context.Context
@@ -18,8 +19,9 @@ type AppContext struct {
 	UserConfig     *utils.UserConfig
 }
 
-func NewAppContext(app *fyne.App, window *fyne.Window, context *context.Context) *AppContext {
+func NewAppContext(appName string, app *fyne.App, window *fyne.Window, context *context.Context) *AppContext {
 	return &AppContext{
+		AppName:        appName,
 		MainWindow:     window,
 		App:            app,
 		Context:        context,
@@ -34,14 +36,10 @@ func (a *AppContext) InitialiseSystemTray(logo fyne.Resource) {
 			(*a.MainWindow).Show()
 		})
 
-		m := fyne.NewMenu("Passbolt", item)
+		m := fyne.NewMenu(a.AppName, item)
 		desk.SetSystemTrayMenu(m)
 		desk.SetSystemTrayIcon(logo)
 	}
-
-	(*a.MainWindow).SetCloseIntercept(func() {
-		(*a.MainWindow).Hide()
-	})
 }
 
 func (a *AppContext) UpdateMainWindow(window *fyne.Window, size fyne.Size) {
@@ -55,7 +53,7 @@ func (a *AppContext) StartMainWindow() {
 	(*a.MainWindow).ShowAndRun()
 }
 
-func (a *AppContext) CreateNewWindowWithView(window *fyne.Window) {
+func (a *AppContext) CreateNewWindowAndShow(window *fyne.Window) {
 	(*window).Show()
 }
 

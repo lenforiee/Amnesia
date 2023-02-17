@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 )
 
 type UserConfig struct {
@@ -13,13 +14,33 @@ type UserConfig struct {
 	RememberMe     bool   `json:"remember_me"`
 }
 
+func GetOSSaveDir() (userDir string) {
+
+	if runtime.GOOS == "windows" {
+		userDir = os.Getenv("APPDATA")
+	} else if runtime.GOOS == "linux" {
+		userDir = os.Getenv("HOME") + "/.config"
+	} else if runtime.GOOS == "darwin" {
+		userDir = os.Getenv("HOME") + "/Library/Application Support"
+	}
+	return userDir
+}
+
 func NewUserConfig() (*UserConfig, error) {
-	tempDir := os.TempDir()
+	userDir := GetOSSaveDir()
 
 	config := UserConfig{
 		ServerURI:      "",
 		PrivateKeyPath: "",
-		RememberMe:      false,
+		RememberMe:     false,
+	}
+
+	_, err := os.Stat(fmt.Sprintf("%s/amnesia", userDir))
+	if os.IsNotExist(err) {
+		err = os.Mkdir(fmt.Sprintf("%s/amnesia", userDir), 0755)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	file, err := json.Marshal(config)
@@ -27,7 +48,7 @@ func NewUserConfig() (*UserConfig, error) {
 		return nil, err
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s/passbolt-gui/config.json", tempDir), file, 0644)
+	err = ioutil.WriteFile(fmt.Sprintf("%s/amnesia/config.json", userDir), file, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -36,14 +57,14 @@ func NewUserConfig() (*UserConfig, error) {
 }
 
 func LoadUserConfig() (*UserConfig, error) {
-	tempDir := os.TempDir()
+	userDir := GetOSSaveDir()
 
-	_, err := os.Stat(fmt.Sprintf("%s/passbolt-gui/config.json", tempDir))
+	_, err := os.Stat(fmt.Sprintf("%s/amnesia/config.json", userDir))
 	if os.IsNotExist(err) {
 		return NewUserConfig()
 	}
 
-	file, err := ioutil.ReadFile(fmt.Sprintf("%s/passbolt-gui/config.json", tempDir))
+	file, err := ioutil.ReadFile(fmt.Sprintf("%s/amnesia/config.json", userDir))
 	if err != nil {
 		return nil, err
 	}
@@ -58,14 +79,14 @@ func LoadUserConfig() (*UserConfig, error) {
 }
 
 func (conf *UserConfig) SaveUserConfig() error {
-	tempDir := os.TempDir()
 
+	userDir := GetOSSaveDir()
 	file, err := json.Marshal(conf)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s/passbolt-gui/config.json", tempDir), file, 0644)
+	err = ioutil.WriteFile(fmt.Sprintf("%s/amnesia/config.json", userDir), file, 0644)
 	if err != nil {
 		return err
 	}

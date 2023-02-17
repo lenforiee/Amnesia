@@ -8,10 +8,12 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/lenforiee/PassboltGUI/internals/controllers"
-	"github.com/lenforiee/PassboltGUI/utils"
-	"github.com/lenforiee/PassboltGUI/utils/logger"
+	"github.com/lenforiee/AmnesiaGUI/bundle"
+	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/utils"
+	"github.com/lenforiee/AmnesiaGUI/utils/logger"
 	"github.com/sqweek/dialog"
 )
 
@@ -22,29 +24,29 @@ type LoginWindow struct {
 
 func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 
-	window := (*app.App).NewWindow("PassboltGUI Login")
+	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Login", app.AppName))
 	view := &LoginWindow{
 		Window:    &window,
 		Container: nil,
 	}
 
 	serverURILabel := widget.NewLabelWithStyle(
-		"Enter your server URI",
-		fyne.TextAlignLeading,
+		"Passbolt Server URI",
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 	itemServerURI := widget.NewEntry()
 	itemServerURI.SetText(app.UserConfig.ServerURI)
 
 	privateKeyPathLabel := widget.NewLabelWithStyle(
-		"Enter your private key path",
-		fyne.TextAlignLeading,
+		"Passbolt Private Key Path",
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 	itemPrivateKeyPath := widget.NewEntry()
 	itemPrivateKeyPath.SetText(app.UserConfig.PrivateKeyPath)
 
-	dialogBtn := widget.NewButton("Choose file", func() {
+	dialogBtn := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), func() {
 		filename, err := dialog.File().Filter("Passbolt Private Key File (.txt, .pem)", "txt", "pem").Load()
 		if err != nil {
 			return
@@ -53,8 +55,8 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 	})
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Enter your passphrase",
-		fyne.TextAlignLeading,
+		"Passbolt Passphrase",
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 	itemPasswd := widget.NewPasswordEntry()
@@ -72,17 +74,22 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 				logger.LogErr.Println(errMsg)
 
 				errView := NewErrorWindow(app, errMsg)
-				app.CreateNewWindowWithView(errView.Window)
+				app.CreateNewWindowAndShow(errView.Window)
 				rememberInfo.SetChecked(false)
 				return
 			}
 			itemServerURI.Disable()
 			itemPrivateKeyPath.Disable()
 			dialogBtn.Disable()
+
+			// have focus on password item.
+			itemPasswd.FocusGained()
 		} else {
 			itemServerURI.Enable()
 			itemPrivateKeyPath.Enable()
 			dialogBtn.Enable()
+
+			itemPasswd.FocusLost()
 		}
 	}
 
@@ -91,26 +98,35 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 		return
 	})
 
-	image := canvas.NewImageFromFile("./assets/logo_white.png")
+	image := canvas.NewImageFromResource(bundle.ResourceAssetsImagesAmnesialogoPng)
 	image.FillMode = canvas.ImageFillOriginal
 
-	containerBox := container.New(
-		layout.NewVBoxLayout(),
+	containerBox := container.NewBorder(
 		image,
-		widget.NewSeparator(),
-		serverURILabel,
-		itemServerURI,
-		privateKeyPathLabel,
 		container.New(
 			layout.NewVBoxLayout(),
-			itemPrivateKeyPath,
-			dialogBtn,
+			loginButton,
 		),
-		passwdLabel,
-		itemPasswd,
-		rememberInfo,
-		loginButton,
+		nil,
+		nil,
+		container.New(
+			layout.NewVBoxLayout(),
+			serverURILabel,
+			itemServerURI,
+			privateKeyPathLabel,
+			container.NewBorder(
+				nil,
+				nil,
+				nil,
+				dialogBtn,
+				itemPrivateKeyPath,
+			),
+			passwdLabel,
+			itemPasswd,
+			rememberInfo,
+		),
 	)
+
 	view.Window = &window
 	view.Container = containerBox
 
@@ -128,7 +144,7 @@ func OnClickLogin(app *controllers.AppContext, password string) {
 		logger.LogErr.Println(errMsg)
 
 		errView := NewErrorWindow(app, errMsg)
-		app.CreateNewWindowWithView(errView.Window)
+		app.CreateNewWindowAndShow(errView.Window)
 		return
 	}
 

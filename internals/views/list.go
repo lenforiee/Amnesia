@@ -10,10 +10,12 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/lenforiee/PassboltGUI/internals/controllers"
-	"github.com/lenforiee/PassboltGUI/utils/logger"
-	"github.com/lenforiee/PassboltGUI/utils/passbolt"
+	"github.com/lenforiee/AmnesiaGUI/bundle"
+	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/utils/logger"
+	"github.com/lenforiee/AmnesiaGUI/utils/passbolt"
 	"github.com/passbolt/go-passbolt/api"
 )
 
@@ -28,11 +30,14 @@ var (
 	LookupNameList = binding.NewStringList()
 	LookupTokenMap = binding.NewUntypedMap()
 	Resources      *[]api.Resource
+
+	List   *widget.List
+	Search *widget.Entry
 )
 
 func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 
-	window := (*app.App).NewWindow("PassboltGUI Account List")
+	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Account List", app.AppName))
 	view := &ListWindow{
 		Window:    &window,
 		Container: nil,
@@ -44,7 +49,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 		logger.LogErr.Println(errMsg)
 
 		errView := NewErrorWindow(app, errMsg)
-		app.CreateNewWindowWithView(errView.Window)
+		app.CreateNewWindowAndShow(errView.Window)
 	}
 
 	for i, r := range resources {
@@ -76,7 +81,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 			logger.LogErr.Println(errMsg)
 
 			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowWithView(errView.Window)
+			app.CreateNewWindowAndShow(errView.Window)
 			return
 		}
 
@@ -86,14 +91,15 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 			logger.LogErr.Println(errMsg)
 
 			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowWithView(errView.Window)
+			app.CreateNewWindowAndShow(errView.Window)
 			return
 		}
 
-		resourceView := NewResourceWindow(app, resource)
-		app.CreateNewWindowWithView(resourceView.Window)
+		resourceView := NewResourceWindow(app, token.(string), resource)
+		app.CreateNewWindowAndShow(resourceView.Window)
 
 	}
+	List = list
 
 	search := widget.NewEntry()
 	search.SetPlaceHolder("eg. Amazon")
@@ -120,27 +126,49 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 		LookupTokenMap.Set(filteredTokenIdMap)
 		list.Refresh()
 	}
+	Search = search
 
-	quitBtn := widget.NewButton("Quit", func() {
-		(*app.MainWindow).Close()
+	hideBtn := widget.NewButton("Hide to tray", func() {
+		(*app.MainWindow).Hide()
 	})
 
 	// create refresh button
-	refreshBtn := widget.NewButton("Refresh List", func() {
-		RefreshListData(list, search, app)
+	refreshBtn := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
+		RefreshListData(app)
 	})
 
-	image := canvas.NewImageFromFile("./assets/logo_white.png")
+	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
+		addView := NewResourceAddWindow(app)
+
+		addView.OnButtonClick = func() {
+			RefreshListData(app)
+		}
+
+		app.CreateNewWindowAndShow(addView.Window)
+	})
+
+	image := canvas.NewImageFromResource(bundle.ResourceAssetsImagesAmnesialogoPng)
 	image.FillMode = canvas.ImageFillOriginal
 
 	containerBox := container.NewBorder(
-		image,
 		container.New(
 			layout.NewVBoxLayout(),
-			search,
-			refreshBtn,
-			widget.NewSeparator(),
-			quitBtn,
+			image,
+			container.NewBorder(
+				nil,
+				nil,
+				nil,
+				container.New(
+					layout.NewGridLayout(2),
+					addBtn,
+					refreshBtn,
+				),
+				search,
+			),
+		),
+		container.New(
+			layout.NewVBoxLayout(),
+			hideBtn,
 		),
 		nil,
 		nil,
@@ -156,7 +184,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 	return view, size
 }
 
-func RefreshListData(list *widget.List, search *widget.Entry, app *controllers.AppContext) {
+func RefreshListData(app *controllers.AppContext) {
 	resources, err := passbolt.GetResources(app, api.GetResourcesOptions{})
 
 	if err != nil {
@@ -164,13 +192,14 @@ func RefreshListData(list *widget.List, search *widget.Entry, app *controllers.A
 		logger.LogErr.Println(errMsg)
 
 		errView := NewErrorWindow(app, errMsg)
-		app.CreateNewWindowWithView(errView.Window)
+		app.CreateNewWindowAndShow(errView.Window)
 	}
 
 	RealNameList = []string{}
 	RealTokenIdMap = make(map[string]interface{})
+	Resources = &resources
 
-	for i, r := range resources {
+	for i, r := range *Resources {
 		RealNameList = append(RealNameList, r.Name)
 		RealTokenIdMap[strconv.Itoa(i)] = r.ID
 	}
@@ -178,7 +207,7 @@ func RefreshListData(list *widget.List, search *widget.Entry, app *controllers.A
 	LookupNameList.Set(RealNameList)
 	LookupTokenMap.Set(RealTokenIdMap)
 
-	search.SetText("")
-	list.Refresh()
+	Search.SetText("")
+	List.Refresh()
 
 }

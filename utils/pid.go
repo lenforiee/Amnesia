@@ -11,7 +11,7 @@ func NewPidFile() error {
 	pid := os.Getpid()
 	tempDir := os.TempDir()
 
-	file, err := os.Create(fmt.Sprintf("%s/passbolt-gui/passbolt-gui.pid", tempDir))
+	file, err := os.Create(fmt.Sprintf("%s/amnesia/amnesia.pid", tempDir))
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func NewPidFile() error {
 func RemovePidFile() error {
 	tempDir := os.TempDir()
 
-	err := os.Remove(fmt.Sprintf("%s/passbolt-gui/passbolt-gui.pid", tempDir))
+	err := os.Remove(fmt.Sprintf("%s/amnesia/amnesia.pid", tempDir))
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func RemovePidFile() error {
 func CheckPidFile() error {
 	tempDir := os.TempDir()
 
-	_, err := os.Stat(fmt.Sprintf("%s/passbolt-gui/passbolt-gui.pid", tempDir))
+	_, err := os.Stat(fmt.Sprintf("%s/amnesia/amnesia.pid", tempDir))
 	if !os.IsNotExist(err) {
-		return errors.New("Passbolt GUI is already running")
+		return errors.New("Amnesia is already running")
 	}
 
 	return nil

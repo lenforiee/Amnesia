@@ -9,8 +9,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"golang.design/x/clipboard"
 
-	"github.com/lenforiee/PassboltGUI/internals/controllers"
-	"github.com/lenforiee/PassboltGUI/models"
+	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/models"
 )
 
 type ResourceWindow struct {
@@ -18,9 +18,10 @@ type ResourceWindow struct {
 	Container *fyne.Container
 }
 
-func NewResourceWindow(app *controllers.AppContext, resource *models.Resource) *ResourceWindow {
+func NewResourceWindow(app *controllers.AppContext, token string, resource *models.Resource) *ResourceWindow {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("PassboltGUI Resource: %s", resource.Name))
+	window := (*app.App).NewWindow(fmt.Sprintf("%s :: View Resource", app.AppName))
+
 	view := &ResourceWindow{
 		Window:    &window,
 		Container: nil,
@@ -28,58 +29,59 @@ func NewResourceWindow(app *controllers.AppContext, resource *models.Resource) *
 
 	nameLabel := widget.NewLabelWithStyle(
 		"Resource Name",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 	itemName := widget.NewEntry()
+	itemName.SetPlaceHolder("eg. Amazon")
 
 	itemName.SetText(resource.Name)
 	itemName.Disable()
 
 	usernameLabel := widget.NewLabelWithStyle(
 		"Username",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
 	itemUsername := widget.NewEntry()
-	itemUsername.TextStyle = fyne.TextStyle{Bold: true}
+	itemUsername.SetPlaceHolder("eg. example@example.com")
 
 	itemUsername.SetText(resource.Username)
 	itemUsername.Disable()
 
 	uriLabel := widget.NewLabelWithStyle(
 		"URI",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
 	itemUri := widget.NewEntry()
-	itemUri.TextStyle = fyne.TextStyle{Bold: true}
+	itemUri.SetPlaceHolder("eg. https://amazon.com")
 
 	itemUri.SetText(resource.URI)
 	itemUri.Disable()
 
 	passwdLabel := widget.NewLabelWithStyle(
 		"Password",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
 	itemPasswd := widget.NewPasswordEntry()
-	itemPasswd.TextStyle = fyne.TextStyle{Bold: true}
+	itemPasswd.SetPlaceHolder("eg. ************")
 
 	itemPasswd.SetText(resource.Password)
 	itemPasswd.Disable()
 
 	descLabel := widget.NewLabelWithStyle(
 		"Description",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
 	itemDesc := widget.NewEntry()
-	itemDesc.TextStyle = fyne.TextStyle{Bold: true}
+	itemDesc.SetPlaceHolder("eg. An Amazon account")
 
 	itemDesc.SetText(resource.Description)
 	itemDesc.Disable()
@@ -90,6 +92,13 @@ func NewResourceWindow(app *controllers.AppContext, resource *models.Resource) *
 
 	copyPasswd := widget.NewButton("Copy Password", func() {
 		clipboard.Write(clipboard.FmtText, []byte(resource.Password))
+	})
+
+	editBtn := widget.NewButton("Edit", func() {
+		(*view.Window).Close()
+
+		window := NewResourceEditWindow(app, token, resource)
+		(*app).CreateNewWindowAndShow(window.Window)
 	})
 
 	closeBtn := widget.NewButton("Close", func() {
@@ -108,8 +117,12 @@ func NewResourceWindow(app *controllers.AppContext, resource *models.Resource) *
 		itemPasswd,
 		descLabel,
 		itemDesc,
-		copyUsername,
-		copyPasswd,
+		container.New(
+			layout.NewGridLayout(2),
+			copyUsername,
+			copyPasswd,
+		),
+		editBtn,
 		widget.NewSeparator(),
 		closeBtn,
 	)
