@@ -94,8 +94,10 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 	}
 
 	loginButton := widget.NewButton("Login", func() {
+		loadingSplash := NewLoadingWindow(app, "Logging in...")
+		app.CreateNewWindowAndShow(loadingSplash.Window)
 		OnClickLogin(app, itemPasswd.Text)
-		return
+		loadingSplash.StopLoading(app)
 	})
 
 	image := canvas.NewImageFromResource(bundle.ResourceAssetsImagesAmnesialogoPng)

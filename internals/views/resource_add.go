@@ -15,10 +15,11 @@ import (
 )
 
 type ResourceAddWindow struct {
-	Window        *fyne.Window
-	Button        *widget.Button
-	OnButtonClick func()
-	Container     *fyne.Container
+	Window         *fyne.Window
+	Button         *widget.Button
+	OnButtonBefore func()
+	OnButtonClick  func()
+	Container      *fyne.Container
 }
 
 func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
@@ -75,6 +76,8 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 	itemDesc.SetPlaceHolder("eg. An Amazon account")
 
 	submitBtn := widget.NewButton("Submit", func() {
+
+		(*view).OnButtonBefore()
 
 		var emptyFields []string
 

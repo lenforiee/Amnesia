@@ -75,6 +75,9 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 	list.OnSelected = func(id widget.ListItemID) {
 		list.Unselect(id)
 
+		loadingSplash := NewLoadingWindow(app, "Loading resource...")
+		app.CreateNewWindowAndShow(loadingSplash.Window)
+
 		token, err := LookupTokenMap.GetValue(strconv.Itoa(id))
 		if err != nil {
 			errMsg := fmt.Sprintf("There was error while getting token value: %s", err)
@@ -82,6 +85,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 
 			errView := NewErrorWindow(app, errMsg)
 			app.CreateNewWindowAndShow(errView.Window)
+			loadingSplash.StopLoading(app)
 			return
 		}
 
@@ -92,11 +96,13 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 
 			errView := NewErrorWindow(app, errMsg)
 			app.CreateNewWindowAndShow(errView.Window)
+			loadingSplash.StopLoading(app)
 			return
 		}
 
 		resourceView := NewResourceWindow(app, token.(string), resource)
 		app.CreateNewWindowAndShow(resourceView.Window)
+		loadingSplash.StopLoading(app)
 
 	}
 	List = list
@@ -134,14 +140,24 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 
 	// create refresh button
 	refreshBtn := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
+		loadingSplash := NewLoadingWindow(app, "Refreshing the list...")
+		app.CreateNewWindowAndShow(loadingSplash.Window)
 		RefreshListData(app)
+		loadingSplash.StopLoading(app)
 	})
 
 	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
 		addView := NewResourceAddWindow(app)
 
+		loadingSplash := NewLoadingWindow(app, "Adding the resource...")
+		addView.OnButtonBefore = func() {
+			app.CreateNewWindowAndShow(loadingSplash.Window)
+		}
+
 		addView.OnButtonClick = func() {
+			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(app)
+			loadingSplash.StopLoading(app)
 		}
 
 		app.CreateNewWindowAndShow(addView.Window)

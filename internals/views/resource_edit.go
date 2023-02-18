@@ -122,7 +122,10 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 			}
 
 			// views/list.go
+			loadingSplash := NewLoadingWindow(app, "Refreshing the list...")
+			app.CreateNewWindowAndShow(loadingSplash.Window)
 			RefreshListData(app)
+			loadingSplash.StopLoading(app)
 		}
 
 		app.CreateNewWindowAndShow(confirmView.Window)
