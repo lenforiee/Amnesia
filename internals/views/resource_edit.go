@@ -30,7 +30,7 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
-		"Resource Name",
+		"Resource Name(*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -62,7 +62,7 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 	itemUri.SetText(resource.URI)
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Password",
+		"Password(*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -82,6 +82,8 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 	itemDesc.SetPlaceHolder("eg. An Amazon account")
 
 	itemDesc.SetText(resource.Description)
+
+	asteriskLabel := widget.NewLabel("(*) - Required field.")
 
 	saveBtn := widget.NewButton("Save", func() {
 		saveResource := models.Resource{
@@ -111,6 +113,8 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 	deleteBtn := widget.NewButton("Delete", func() {
 		confirmView := NewConfirmWindow(app, "Are you sure you want to delete this resource?")
 		confirmView.OnYes = func() {
+			loadingSplash := NewLoadingWindow(app, "Removing the resource...")
+			app.CreateNewWindowAndShow(loadingSplash.Window)
 			err := passbolt.DeleteResource(app, token)
 			if err != nil {
 				errMsg := fmt.Sprintf("There was error while deleting resource: %s", err)
@@ -118,12 +122,12 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 
 				errView := NewErrorWindow(app, errMsg)
 				app.CreateNewWindowAndShow(errView.Window)
+				loadingSplash.StopLoading(app)
 				return
 			}
 
 			// views/list.go
-			loadingSplash := NewLoadingWindow(app, "Refreshing the list...")
-			app.CreateNewWindowAndShow(loadingSplash.Window)
+			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(app)
 			loadingSplash.StopLoading(app)
 		}
@@ -148,6 +152,7 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 		itemPasswd,
 		descLabel,
 		itemDesc,
+		asteriskLabel,
 		saveBtn,
 		deleteBtn,
 		widget.NewSeparator(),

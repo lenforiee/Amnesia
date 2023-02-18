@@ -18,6 +18,7 @@ type ResourceAddWindow struct {
 	Window         *fyne.Window
 	Button         *widget.Button
 	OnButtonBefore func()
+	OnButtonError  func()
 	OnButtonClick  func()
 	Container      *fyne.Container
 }
@@ -32,8 +33,8 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
-		"Resource Name",
-		fyne.TextAlignLeading,
+		"Resource Name(*)",
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 	itemName := widget.NewEntry()
@@ -41,7 +42,7 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 
 	usernameLabel := widget.NewLabelWithStyle(
 		"Username",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
@@ -50,7 +51,7 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 
 	uriLabel := widget.NewLabelWithStyle(
 		"URI",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
@@ -58,8 +59,8 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 	itemUri.SetPlaceHolder("eg. https://amazon.com")
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Password",
-		fyne.TextAlignLeading,
+		"Password(*)",
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
@@ -68,12 +69,14 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 
 	descLabel := widget.NewLabelWithStyle(
 		"Description",
-		fyne.TextAlignLeading,
+		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
 	itemDesc := widget.NewEntry()
 	itemDesc.SetPlaceHolder("eg. An Amazon account")
+
+	asteriskLabel := widget.NewLabel("(*) - Required field.")
 
 	submitBtn := widget.NewButton("Submit", func() {
 
@@ -101,6 +104,7 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 
 			errView := NewErrorWindow(app, errMsg)
 			app.CreateNewWindowAndShow(errView.Window)
+			(*view).OnButtonError()
 			return
 		}
 
@@ -145,6 +149,7 @@ func NewResourceAddWindow(app *controllers.AppContext) *ResourceAddWindow {
 		itemPasswd,
 		descLabel,
 		itemDesc,
+		asteriskLabel,
 		submitBtn,
 		widget.NewSeparator(),
 		closeBtn,

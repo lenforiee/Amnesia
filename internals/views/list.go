@@ -154,6 +154,10 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 			app.CreateNewWindowAndShow(loadingSplash.Window)
 		}
 
+		addView.OnButtonError = func() {
+			loadingSplash.StopLoading(app)
+		}
+
 		addView.OnButtonClick = func() {
 			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(app)
