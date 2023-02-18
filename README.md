@@ -29,11 +29,20 @@ Since Amnesia is an open source project, you may also compile the executables fr
 To do so, you must first download and install the Go compiler. Then it is a matter of running the following commands:
 
 ```sh
+# Clone the repository
+git clone https://github.com/lenforiee/AmnesiaGUI
+
+# Go into directory
+cd AmnesiaGUI
+
 # Download the required modules
 go get
 
 # Compile the project executable
 go build
+
+# If you building on windows use this command to make console not appear
+go build -ldflags -H=windowsgui
 ```
 
 We only recommend this method for users interested in contributing to the project, or making small adjustments for themselves.
