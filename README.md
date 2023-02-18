@@ -3,6 +3,9 @@
 </p>
 <hr>
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/lenforiee/AmnesiaGUI)](https://goreportcard.com/report/github.com/lenforiee/AmnesiaGUI)
+![Version](https://img.shields.io/badge/Version-v0.0.1-blue)
+
 ## What is Amnesia
 Amnesia is a desktop application for the Passbolt password manager! It is:
 - 🚀**Simple yet beautiful** with an intuitive user interface.
@@ -36,6 +39,9 @@ go build
 We only recommend this method for users interested in contributing to the project, or making small adjustments for themselves.
 
 <hr>
+
+## Credits
+- Thank you @adrplays for a application logo!
 
 ## Licence
 Amnesia is licenced under the permissive [MIT Licence](https://github.com/lenforiee/AmnesiaGUI/blob/main/LICENSE)
