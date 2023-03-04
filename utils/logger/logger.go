@@ -28,7 +28,7 @@ func InitialiseLogging(logFile string) {
 		log.Fatal(err)
 	}
 
-	LogInfo = log.New(file, "[INFO]: ", log.Ldate|log.Ltime|log.Lshortfile)
-	LogWarn = log.New(file, "[WARNING]: ", log.Ldate|log.Ltime|log.Lshortfile)
-	LogErr = log.New(file, "[ERROR]: ", log.Ldate|log.Ltime|log.Lshortfile)
+	LogInfo = log.New(file, fmt.Sprintf("[INFO] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
+	LogWarn = log.New(file, fmt.Sprintf("[WARNING] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
+	LogErr = log.New(file, fmt.Sprintf("[ERROR] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
 }
