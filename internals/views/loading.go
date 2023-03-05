@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/widget"
 	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 )
 
 type LoadingWindow struct {
@@ -18,7 +18,7 @@ type LoadingWindow struct {
 	Container *fyne.Container
 }
 
-func NewLoadingWindow(app *controllers.AppContext, text string) *LoadingWindow {
+func NewLoadingWindow(app *contexts.AppContext, text string) *LoadingWindow {
 	var window fyne.Window
 	if drv, ok := (*app.App).Driver().(desktop.Driver); ok {
 		window = drv.CreateSplashWindow()
@@ -63,6 +63,6 @@ func (view *LoadingWindow) UpdateText(text string) {
 	(*view.Label).SetText(text)
 }
 
-func (view *LoadingWindow) StopLoading(app *controllers.AppContext) {
+func (view *LoadingWindow) StopLoading() {
 	(*view.Window).Close()
 }

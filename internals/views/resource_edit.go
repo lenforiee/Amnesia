@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 	"github.com/lenforiee/AmnesiaGUI/models"
 	"github.com/lenforiee/AmnesiaGUI/utils/logger"
 	"github.com/lenforiee/AmnesiaGUI/utils/passbolt"
@@ -20,7 +20,7 @@ type ResourceEditWindow struct {
 }
 
 // TODO: fix this function, it consistantly crashes the app.
-func NewResourceEditWindow(app *controllers.AppContext, token string, resource *models.Resource) *ResourceEditWindow {
+func NewResourceEditWindow(app *contexts.AppContext, token string, resource *models.Resource) *ResourceEditWindow {
 
 	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Edit Resource", app.AppName))
 
@@ -122,14 +122,14 @@ func NewResourceEditWindow(app *controllers.AppContext, token string, resource *
 
 				errView := NewErrorWindow(app, errMsg)
 				app.CreateNewWindowAndShow(errView.Window)
-				loadingSplash.StopLoading(app)
+				loadingSplash.StopLoading()
 				return
 			}
 
 			// views/list.go
 			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(app)
-			loadingSplash.StopLoading(app)
+			loadingSplash.StopLoading()
 		}
 
 		app.CreateNewWindowAndShow(confirmView.Window)

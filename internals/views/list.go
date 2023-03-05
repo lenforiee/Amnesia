@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 	"github.com/lenforiee/AmnesiaGUI/utils/logger"
 	"github.com/lenforiee/AmnesiaGUI/utils/passbolt"
 	"github.com/passbolt/go-passbolt/api"
@@ -35,7 +35,7 @@ var (
 	Search *widget.Entry
 )
 
-func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
+func NewListWindow(app *contexts.AppContext) (*ListWindow, fyne.Size) {
 
 	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Account List", app.AppName))
 	view := &ListWindow{
@@ -85,7 +85,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 
 			errView := NewErrorWindow(app, errMsg)
 			app.CreateNewWindowAndShow(errView.Window)
-			loadingSplash.StopLoading(app)
+			loadingSplash.StopLoading()
 			return
 		}
 
@@ -96,13 +96,13 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 
 			errView := NewErrorWindow(app, errMsg)
 			app.CreateNewWindowAndShow(errView.Window)
-			loadingSplash.StopLoading(app)
+			loadingSplash.StopLoading()
 			return
 		}
 
 		resourceView := NewResourceWindow(app, token.(string), resource)
 		app.CreateNewWindowAndShow(resourceView.Window)
-		loadingSplash.StopLoading(app)
+		loadingSplash.StopLoading()
 
 	}
 	List = list
@@ -143,7 +143,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 		loadingSplash := NewLoadingWindow(app, "Refreshing the list...")
 		app.CreateNewWindowAndShow(loadingSplash.Window)
 		RefreshListData(app)
-		loadingSplash.StopLoading(app)
+		loadingSplash.StopLoading()
 	})
 
 	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
@@ -155,13 +155,13 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 		}
 
 		addView.OnButtonError = func() {
-			loadingSplash.StopLoading(app)
+			loadingSplash.StopLoading()
 		}
 
 		addView.OnButtonClick = func() {
 			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(app)
-			loadingSplash.StopLoading(app)
+			loadingSplash.StopLoading()
 		}
 
 		app.CreateNewWindowAndShow(addView.Window)
@@ -204,7 +204,7 @@ func NewListWindow(app *controllers.AppContext) (*ListWindow, fyne.Size) {
 	return view, size
 }
 
-func RefreshListData(app *controllers.AppContext) {
+func RefreshListData(app *contexts.AppContext) {
 	resources, err := passbolt.GetResources(app, api.GetResourcesOptions{})
 
 	if err != nil {

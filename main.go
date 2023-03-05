@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2/app"
 
 	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 	"github.com/lenforiee/AmnesiaGUI/internals/views"
 	"github.com/lenforiee/AmnesiaGUI/models"
 	"github.com/lenforiee/AmnesiaGUI/utils"
@@ -40,7 +40,7 @@ func main() {
 	mainWindow.SetMaster()
 	context := context.TODO()
 
-	appContext := controllers.NewAppContext(appName, &app, &mainWindow, &context)
+	appContext := contexts.NewAppContext(appName, &app, &mainWindow, &context)
 	appContext.LoadConfig()
 	appContext.InitialiseSystemTray(bundle.ResourceAssetsImagesLogoPng)
 

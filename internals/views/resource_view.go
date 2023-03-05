@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"golang.design/x/clipboard"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 	"github.com/lenforiee/AmnesiaGUI/models"
 )
 
@@ -18,7 +18,7 @@ type ResourceWindow struct {
 	Container *fyne.Container
 }
 
-func NewResourceWindow(app *controllers.AppContext, token string, resource *models.Resource) *ResourceWindow {
+func NewResourceWindow(app *contexts.AppContext, token string, resource *models.Resource) *ResourceWindow {
 
 	window := (*app.App).NewWindow(fmt.Sprintf("%s :: View Resource", app.AppName))
 

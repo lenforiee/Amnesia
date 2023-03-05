@@ -11,7 +11,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 	"github.com/lenforiee/AmnesiaGUI/utils"
 	"github.com/lenforiee/AmnesiaGUI/utils/logger"
 	"github.com/sqweek/dialog"
@@ -22,7 +22,7 @@ type LoginWindow struct {
 	Container *fyne.Container
 }
 
-func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
+func NewLoginWindow(app *contexts.AppContext) (*LoginWindow, fyne.Size) {
 
 	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Login", app.AppName))
 	view := &LoginWindow{
@@ -97,7 +97,7 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 		loadingSplash := NewLoadingWindow(app, "Logging in...")
 		app.CreateNewWindowAndShow(loadingSplash.Window)
 		OnClickLogin(app, itemPasswd.Text)
-		loadingSplash.StopLoading(app)
+		loadingSplash.StopLoading()
 	})
 
 	image := canvas.NewImageFromResource(bundle.ResourceAssetsImagesAmnesialogoPng)
@@ -140,7 +140,7 @@ func NewLoginWindow(app *controllers.AppContext) (*LoginWindow, fyne.Size) {
 	return view, size
 }
 
-func OnClickLogin(app *controllers.AppContext, password string) {
+func OnClickLogin(app *contexts.AppContext, password string) {
 	if err := app.InitialisePassbolt(password); err != nil {
 		errMsg := fmt.Sprintf("There was error while initialising passbolt client: %s", err)
 		logger.LogErr.Println(errMsg)

@@ -7,7 +7,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 )
 
 type ErrorWindow struct {
@@ -15,7 +15,7 @@ type ErrorWindow struct {
 	Container *fyne.Container
 }
 
-func NewErrorWindow(app *controllers.AppContext, err string) *ErrorWindow {
+func NewErrorWindow(app *contexts.AppContext, err string) *ErrorWindow {
 
 	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Error", app.AppName))
 	view := &ErrorWindow{

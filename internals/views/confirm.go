@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/controllers"
+	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 )
 
 type ConfirmWindow struct {
@@ -17,7 +17,7 @@ type ConfirmWindow struct {
 	Container *fyne.Container
 }
 
-func NewConfirmWindow(app *controllers.AppContext, msg string) *ConfirmWindow {
+func NewConfirmWindow(app *contexts.AppContext, msg string) *ConfirmWindow {
 
 	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Confirm", app.AppName))
 	view := &ConfirmWindow{
