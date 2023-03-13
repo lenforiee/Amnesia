@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -28,7 +29,9 @@ func InitialiseLogging(logFile string) {
 		log.Fatal(err)
 	}
 
-	LogInfo = log.New(file, fmt.Sprintf("[INFO] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
-	LogWarn = log.New(file, fmt.Sprintf("[WARNING] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
-	LogErr = log.New(file, fmt.Sprintf("[ERROR] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
+	multiWriter := io.MultiWriter(os.Stdout, file)
+
+	LogInfo = log.New(multiWriter, fmt.Sprintf("[INFO] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
+	LogWarn = log.New(multiWriter, fmt.Sprintf("[WARNING] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
+	LogErr = log.New(multiWriter, fmt.Sprintf("[ERROR] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
 }
