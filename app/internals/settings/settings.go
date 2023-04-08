@@ -26,10 +26,11 @@ func GetOSSaveDir() (userDir string) {
 	return userDir
 }
 
-func NewUserConfig() (s UserSettings, err error) {
+func NewUserSettings() (s UserSettings, err error) {
 	userDir := GetOSSaveDir()
 
 	s = UserSettings{
+		UserAgent:      "",
 		ServerURI:      "",
 		PrivateKeyPath: "",
 		RememberMe:     false,
@@ -56,12 +57,13 @@ func NewUserConfig() (s UserSettings, err error) {
 	return s, err
 }
 
-func LoadUserConfig() (s UserSettings, err error) {
+func LoadUserSettings() (s UserSettings, err error) {
 	userDir := GetOSSaveDir()
 
+	// TLDR: this has to stay config.json for compatibility reasons.
 	_, err = os.Stat(fmt.Sprintf("%s/amnesia/config.json", userDir))
 	if os.IsNotExist(err) {
-		return NewUserConfig()
+		return NewUserSettings()
 	}
 
 	file, err := os.ReadFile(fmt.Sprintf("%s/amnesia/config.json", userDir))
@@ -77,7 +79,7 @@ func LoadUserConfig() (s UserSettings, err error) {
 	return s, err
 }
 
-func (s *UserSettings) SaveUserConfig() (err error) {
+func (s *UserSettings) SaveUserSettings() (err error) {
 
 	userDir := GetOSSaveDir()
 	file, err := json.Marshal(s)
