@@ -29,9 +29,18 @@ func InitialiseLogging(logFile string) {
 		log.Fatal(err)
 	}
 
-	multiWriter := io.MultiWriter(os.Stdout, file)
+	multiOut := io.MultiWriter(os.Stdout, file)
 
-	LogInfo = log.New(multiWriter, fmt.Sprintf("[INFO] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
-	LogWarn = log.New(multiWriter, fmt.Sprintf("[WARNING] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
-	LogErr = log.New(multiWriter, fmt.Sprintf("[ERROR] (%d): ", os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile)
+	LogInfo = log.New(multiOut, fmt.Sprintf(
+		"(PID: %d) - INFO - ",
+		os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile,
+	)
+	LogWarn = log.New(multiOut, fmt.Sprintf(
+		"(PID: %d) - WARNING - ",
+		os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile,
+	)
+	LogErr = log.New(multiOut, fmt.Sprintf(
+		"(PID: %d) - ERROR - ",
+		os.Getpid()), log.Ldate|log.Ltime|log.Lshortfile,
+	)
 }
