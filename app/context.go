@@ -27,6 +27,7 @@ func (a *AppContext) SetAppName(name string) {
 
 func (a *AppContext) SetMainWindow(window fyne.Window) {
 	a.MainWindow = window
+	a.MainWindow.SetMaster()
 }
 
 func (a *AppContext) SetApp(app fyne.App) {
