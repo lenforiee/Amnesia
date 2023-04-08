@@ -1,4 +1,4 @@
-package models
+package themes
 
 import (
 	"image/color"

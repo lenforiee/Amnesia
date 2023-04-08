@@ -18,12 +18,12 @@ func NewResource(
 	password string,
 	description string,
 	err error,
-) (*Resource, error) {
+) (Resource, error) {
 	if err != nil {
-		return nil, err
+		return Resource{}, err
 	}
 
-	return &Resource{
+	return Resource{
 		FolderParentID: folderId,
 		Name:           name,
 		Username:       username,
