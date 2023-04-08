@@ -1,6 +1,7 @@
 package models
 
-// custom model.
+// Custom resource model because passbolt wrapper has all data
+// all over the place. This is a bit more organized.
 type Resource struct {
 	FolderParentID string `json:"folder_parent_id"`
 	Name           string `json:"name"`
@@ -10,25 +11,30 @@ type Resource struct {
 	Description    string `json:"description"`
 }
 
-func NewResource(
-	folderId string,
-	name string,
-	username string,
-	uri string,
-	password string,
-	description string,
-	err error,
-) (Resource, error) {
-	if err != nil {
-		return Resource{}, err
-	}
+func NewResource() Resource {
+	return Resource{}
+}
 
-	return Resource{
-		FolderParentID: folderId,
-		Name:           name,
-		Username:       username,
-		URI:            uri,
-		Password:       password,
-		Description:    description,
-	}, nil
+func (r *Resource) SetFolderParentID(id string) {
+	r.FolderParentID = id
+}
+
+func (r *Resource) SetName(name string) {
+	r.Name = name
+}
+
+func (r *Resource) SetUsername(username string) {
+	r.Username = username
+}
+
+func (r *Resource) SetURI(uri string) {
+	r.URI = uri
+}
+
+func (r *Resource) SetPassword(password string) {
+	r.Password = password
+}
+
+func (r *Resource) SetDescription(description string) {
+	r.Description = description
 }
