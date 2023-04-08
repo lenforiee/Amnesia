@@ -3,12 +3,12 @@ package settings
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 )
 
-type UserConfig struct {
+type UserSettings struct {
+	UserAgent      string `json:"user_agent"`
 	ServerURI      string `json:"server_uri"`
 	PrivateKeyPath string `json:"private_key_path"`
 	RememberMe     bool   `json:"remember_me"`
@@ -26,70 +26,69 @@ func GetOSSaveDir() (userDir string) {
 	return userDir
 }
 
-func NewUserConfig() (*UserConfig, error) {
+func NewUserConfig() (s UserSettings, err error) {
 	userDir := GetOSSaveDir()
 
-	config := UserConfig{
+	s = UserSettings{
 		ServerURI:      "",
 		PrivateKeyPath: "",
 		RememberMe:     false,
 	}
 
-	_, err := os.Stat(fmt.Sprintf("%s/amnesia", userDir))
+	_, err = os.Stat(fmt.Sprintf("%s/amnesia", userDir))
 	if os.IsNotExist(err) {
 		err = os.Mkdir(fmt.Sprintf("%s/amnesia", userDir), 0755)
 		if err != nil {
-			return nil, err
+			return s, err
 		}
 	}
 
-	file, err := json.Marshal(config)
+	file, err := json.Marshal(s)
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s/amnesia/config.json", userDir), file, 0644)
+	err = os.WriteFile(fmt.Sprintf("%s/amnesia/config.json", userDir), file, 0644)
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 
-	return &config, nil
+	return s, err
 }
 
-func LoadUserConfig() (*UserConfig, error) {
+func LoadUserConfig() (s UserSettings, err error) {
 	userDir := GetOSSaveDir()
 
-	_, err := os.Stat(fmt.Sprintf("%s/amnesia/config.json", userDir))
+	_, err = os.Stat(fmt.Sprintf("%s/amnesia/config.json", userDir))
 	if os.IsNotExist(err) {
 		return NewUserConfig()
 	}
 
-	file, err := ioutil.ReadFile(fmt.Sprintf("%s/amnesia/config.json", userDir))
+	file, err := os.ReadFile(fmt.Sprintf("%s/amnesia/config.json", userDir))
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 
-	var config UserConfig
-	err = json.Unmarshal([]byte(file), &config)
+	err = json.Unmarshal([]byte(file), &s)
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 
-	return &config, nil
+	return s, err
 }
 
-func (conf *UserConfig) SaveUserConfig() error {
+func (s *UserSettings) SaveUserConfig() (err error) {
 
 	userDir := GetOSSaveDir()
-	file, err := json.Marshal(conf)
+	file, err := json.Marshal(s)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s/amnesia/config.json", userDir), file, 0644)
+	err = os.WriteFile(fmt.Sprintf("%s/amnesia/config.json", userDir), file, 0644)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return err
 }
