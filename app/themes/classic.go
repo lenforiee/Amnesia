@@ -5,36 +5,50 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
-
-	"github.com/lenforiee/AmnesiaGUI/bundle"
+	"github.com/lenforiee/AmnesiaGUI/bundles"
 )
 
-type Theme struct{}
+type ClassicTheme struct {
+	variant fyne.ThemeVariant
 
-func (*Theme) Font(s fyne.TextStyle) fyne.Resource {
+	// theming purposes.
+	defaultTheme fyne.Theme
+}
+
+func ClassicThemeDark() *ClassicTheme {
+	defaultTheme := theme.DefaultTheme()
+	return &ClassicTheme{variant: theme.VariantDark, defaultTheme: defaultTheme}
+}
+
+func ClassicThemeLight() *ClassicTheme {
+	defaultTheme := theme.DefaultTheme()
+	return &ClassicTheme{variant: theme.VariantLight, defaultTheme: defaultTheme}
+}
+
+func (t *ClassicTheme) Font(s fyne.TextStyle) fyne.Resource {
 	if s.Monospace {
-		return theme.DefaultTheme().Font(s)
+		return t.defaultTheme.Font(s)
 	}
 	if s.Bold {
 		if s.Italic {
-			return theme.DefaultTheme().Font(s)
+			return t.defaultTheme.Font(s)
 		}
-		return bundle.FontJetBrainsMonoBoldTtf
+		return bundles.FontJetBrainsMonoBoldTtf
 	}
 	if s.Italic {
-		return theme.DefaultTheme().Font(s)
+		return t.defaultTheme.Font(s)
 	}
-	return bundle.FontJetBrainsMonoMediumTtf
+	return bundles.FontJetBrainsMonoMediumTtf
 }
 
-func (*Theme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
-	return theme.DefaultTheme().Color(n, v)
+func (t *ClassicTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
+	return t.defaultTheme.Color(n, t.variant)
 }
 
-func (*Theme) Icon(n fyne.ThemeIconName) fyne.Resource {
-	return theme.DefaultTheme().Icon(n)
+func (t *ClassicTheme) Icon(n fyne.ThemeIconName) fyne.Resource {
+	return t.defaultTheme.Icon(n)
 }
 
-func (*Theme) Size(n fyne.ThemeSizeName) float32 {
-	return theme.DefaultTheme().Size(n)
+func (t *ClassicTheme) Size(n fyne.ThemeSizeName) float32 {
+	return t.defaultTheme.Size(n)
 }
