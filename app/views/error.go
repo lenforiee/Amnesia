@@ -6,32 +6,36 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
 )
 
-type ErrorWindow struct {
-	Window    *fyne.Window
+type ErrorView struct {
+	Window    fyne.Window
 	Container *fyne.Container
 }
 
-func NewErrorWindow(app *contexts.AppContext, err string) *ErrorWindow {
+func NewErrorView(app fyne.App, appName string, err string, crash bool) ErrorView {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Error", app.AppName))
-	view := &ErrorWindow{
-		Window:    &window,
-		Container: nil,
+	window := app.NewWindow(fmt.Sprintf("%s :: Error", appName))
+	view := ErrorView{
+		Window: window,
 	}
-	errorLabel := widget.NewLabelWithStyle("Error has occured!",
+
+	labelHeader := "Error has occured!"
+	if crash {
+		labelHeader = "AmnesiaGUI has crashed!"
+	}
+
+	errorLabel := widget.NewLabelWithStyle(labelHeader,
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
 	errorInfo := widget.NewLabel(err)
+	errorInfo.Alignment = fyne.TextAlignCenter
 	errorInfo.Wrapping = fyne.TextWrapWord
 
 	button := widget.NewButton("OK", func() {
-		(*view.Window).Close()
+		view.Window.Close()
 	})
 
 	containerBox := container.NewBorder(
@@ -43,8 +47,8 @@ func NewErrorWindow(app *contexts.AppContext, err string) *ErrorWindow {
 	)
 	view.Container = containerBox
 
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(fyne.NewSize(400, 100))
-	(*view.Window).CenterOnScreen()
+	view.Window.SetContent(view.Container)
+	view.Window.Resize(fyne.NewSize(400, 100))
+	view.Window.CenterOnScreen()
 	return view
 }
