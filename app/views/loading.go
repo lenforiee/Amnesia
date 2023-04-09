@@ -8,26 +8,26 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/widget"
-	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
+	"github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/bundles"
 )
 
-type LoadingWindow struct {
-	Window    *fyne.Window
-	Label     *widget.Label
+type LoadingSplash struct {
+	Window    fyne.Window
+	Label     widget.Label
 	Container *fyne.Container
 }
 
-func NewLoadingWindow(app *contexts.AppContext, text string) *LoadingWindow {
+func NewLoadingSplash(ctx app.AppContext, text string) LoadingSplash {
+
 	var window fyne.Window
-	if drv, ok := (*app.App).Driver().(desktop.Driver); ok {
+	if drv, ok := ctx.App.Driver().(desktop.Driver); ok {
 		window = drv.CreateSplashWindow()
-		window.SetTitle(fmt.Sprintf("%s :: Loading", app.AppName))
+		window.SetTitle(fmt.Sprintf("%s :: Loading...", ctx.AppName))
 	}
 
-	view := &LoadingWindow{
-		Window:    nil,
-		Container: nil,
+	view := LoadingSplash{
+		Window: window,
 	}
 
 	loadingLabel := widget.NewLabelWithStyle(
@@ -36,7 +36,7 @@ func NewLoadingWindow(app *contexts.AppContext, text string) *LoadingWindow {
 		fyne.TextStyle{Bold: true},
 	)
 
-	image := canvas.NewImageFromResource(bundle.ResourceAssetsImagesAmnesialogoPng)
+	image := canvas.NewImageFromResource(bundles.ResourceAmnesiaLogoPng)
 	image.FillMode = canvas.ImageFillOriginal
 
 	containerBox := container.NewBorder(
@@ -47,22 +47,19 @@ func NewLoadingWindow(app *contexts.AppContext, text string) *LoadingWindow {
 		image,
 	)
 
-	view.Window = &window
-	view.Label = loadingLabel
+	view.Label = *loadingLabel
 	view.Container = containerBox
 
-	size := fyne.NewSize(300, 200)
-
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(size)
-	(*view.Window).CenterOnScreen()
+	view.Window.SetContent(view.Container)
+	view.Window.Resize(fyne.NewSize(300, 200))
+	view.Window.CenterOnScreen()
 	return view
 }
 
-func (view *LoadingWindow) UpdateText(text string) {
-	(*view.Label).SetText(text)
+func (s *LoadingSplash) UpdateText(text string) {
+	s.Label.SetText(text)
 }
 
-func (view *LoadingWindow) StopLoading() {
-	(*view.Window).Close()
+func (s *LoadingSplash) Close() {
+	s.Window.Close()
 }
