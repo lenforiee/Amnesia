@@ -11,16 +11,16 @@ import (
 	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 )
 
-type ConfirmWindow struct {
+type ConfirmView struct {
 	Window    fyne.Window
 	OnYes     func()
 	Container *fyne.Container
 }
 
-func NewConfirmWindow(ctx *amnesiaApp.AppContext, msg string) ConfirmWindow {
+func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) ConfirmView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Confirm", ctx.AppName))
-	view := ConfirmWindow{
+	view := ConfirmView{
 		Window: window,
 	}
 	errorLabel := widget.NewLabelWithStyle("Warning!",
