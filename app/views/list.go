@@ -12,56 +12,67 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/utils/logger"
-	"github.com/lenforiee/AmnesiaGUI/utils/passbolt"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
+	"github.com/lenforiee/AmnesiaGUI/bundles"
 	"github.com/passbolt/go-passbolt/api"
 )
 
-type ListWindow struct {
-	Window    *fyne.Window
+type ListView struct {
+	Window    fyne.Window
 	Container *fyne.Container
 }
 
 var (
-	RealNameList   = []string{}
-	RealTokenIdMap = make(map[string]interface{})
-	LookupNameList = binding.NewStringList()
-	LookupTokenMap = binding.NewUntypedMap()
-	Resources      *[]api.Resource
+	protecetedNameList  = []string{}
+	protectedTokenIdMap = make(map[string]interface{})
+	lookupNameList      = binding.NewStringList()
+	lookupTokenMap      = binding.NewUntypedMap()
 
-	List   *widget.List
-	Search *widget.Entry
+	formattedNameList = binding.NewStringList()
+
+	resourcesList []api.Resource
+
+	listWidget   *widget.List
+	searchWidget *widget.Entry
 )
 
-func NewListWindow(app *contexts.AppContext) (*ListWindow, fyne.Size) {
+func NewListWindow(ctx amnesiaApp.AppContext) ListView {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Account List", app.AppName))
-	view := &ListWindow{
-		Window:    &window,
-		Container: nil,
+	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Account List", ctx.AppName))
+	view := ListView{
+		Window: window,
 	}
 
-	resources, err := passbolt.GetResources(app, api.GetResourcesOptions{})
+	resources, err := passbolt.GetResources(ctx, api.GetResourcesOptions{})
 	if err != nil {
 		errMsg := fmt.Sprintf("There was error while getting user accounts: %s", err)
 		logger.LogErr.Println(errMsg)
 
-		errView := NewErrorWindow(app, errMsg)
-		app.CreateNewWindowAndShow(errView.Window)
+		errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+		errView.Window.Show()
 	}
 
 	for i, r := range resources {
-		RealNameList = append(RealNameList, r.Name)
-		RealTokenIdMap[strconv.Itoa(i)] = r.ID
+		protecetedNameList = append(protecetedNameList, r.Name)
+		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
+		if r.Username == "" {
+			formattedNameList.Append(fmt.Sprintf("%s", r.Name))
+		} else {
+			username := r.Username
+			if len(username) > 16 {
+				username = fmt.Sprintf("%s...", strings.Split(r.Username, "")[:16])
+			}
+			formattedNameList.Append(fmt.Sprintf("%s - %s", r.Name, username))
+		}
 	}
 
-	LookupNameList.Set(RealNameList)
-	LookupTokenMap.Set(RealTokenIdMap)
-	Resources = &resources
+	lookupNameList.Set(protecetedNameList)
+	lookupTokenMap.Set(protectedTokenIdMap)
+	resourcesList = resources
 
-	list := widget.NewListWithData(LookupNameList,
+	list := widget.NewListWithData(formattedNameList,
 		func() fyne.CanvasObject {
 			label := widget.NewLabel("template")
 			label.TextStyle = fyne.TextStyle{Bold: true}
@@ -75,37 +86,37 @@ func NewListWindow(app *contexts.AppContext) (*ListWindow, fyne.Size) {
 	list.OnSelected = func(id widget.ListItemID) {
 		list.Unselect(id)
 
-		loadingSplash := NewLoadingWindow(app, "Loading resource...")
-		app.CreateNewWindowAndShow(loadingSplash.Window)
+		loadingSplash := NewLoadingSplash(ctx, "Loading resource...")
+		loadingSplash.Window.Show()
 
-		token, err := LookupTokenMap.GetValue(strconv.Itoa(id))
+		token, err := lookupTokenMap.GetValue(strconv.Itoa(id))
 		if err != nil {
 			errMsg := fmt.Sprintf("There was error while getting token value: %s", err)
 			logger.LogErr.Println(errMsg)
 
-			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowAndShow(errView.Window)
-			loadingSplash.StopLoading()
+			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+			errView.Window.Show()
+			loadingSplash.Close()
 			return
 		}
 
-		resource, err := passbolt.GetResource(app, token.(string))
+		resource, err := passbolt.GetResource(ctx, token.(string))
 		if err != nil {
 			errMsg := fmt.Sprintf("There was error while getting resource data: %s", err)
 			logger.LogErr.Println(errMsg)
 
-			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowAndShow(errView.Window)
-			loadingSplash.StopLoading()
+			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+			errView.Window.Show()
+			loadingSplash.Close()
 			return
 		}
 
-		resourceView := NewResourceWindow(app, token.(string), resource)
-		app.CreateNewWindowAndShow(resourceView.Window)
-		loadingSplash.StopLoading()
+		resourceView := NewResourceView(ctx, token.(string), resource)
+		resourceView.Window.Show()
+		loadingSplash.Close()
 
 	}
-	List = list
+	listWidget = list
 
 	search := widget.NewEntry()
 	search.SetPlaceHolder("eg. Amazon")
@@ -113,61 +124,61 @@ func NewListWindow(app *contexts.AppContext) (*ListWindow, fyne.Size) {
 	search.OnChanged = func(s string) {
 
 		if strings.TrimSpace(s) == "" {
-			LookupNameList.Set(RealNameList)
-			LookupTokenMap.Set(RealTokenIdMap)
+			lookupNameList.Set(protecetedNameList)
+			lookupTokenMap.Set(protectedTokenIdMap)
 			list.Refresh()
 			return
 		}
 
 		var filteredData = []string{}
 		var filteredTokenIdMap = make(map[string]interface{})
-		for _, d := range *Resources {
-			if strings.Contains(strings.ToLower(d.Name), strings.ToLower(s)) {
-				filteredData = append(filteredData, d.Name)
-				filteredTokenIdMap[strconv.Itoa(len(filteredData)-1)] = d.ID
+		for _, r := range resourcesList {
+			if strings.Contains(strings.ToLower(r.Name), strings.ToLower(s)) {
+				filteredData = append(filteredData, r.Name)
+				filteredTokenIdMap[strconv.Itoa(len(filteredData)-1)] = r.ID
 			}
 		}
 
-		LookupNameList.Set(filteredData)
-		LookupTokenMap.Set(filteredTokenIdMap)
+		lookupNameList.Set(filteredData)
+		lookupTokenMap.Set(filteredTokenIdMap)
 		list.Refresh()
 	}
-	Search = search
+	searchWidget = search
 
 	hideBtn := widget.NewButton("Hide to tray", func() {
-		(*app.MainWindow).Hide()
+		ctx.MainWindow.Hide()
 	})
 
 	// create refresh button
 	refreshBtn := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
-		loadingSplash := NewLoadingWindow(app, "Refreshing the list...")
-		app.CreateNewWindowAndShow(loadingSplash.Window)
-		RefreshListData(app)
-		loadingSplash.StopLoading()
+		loadingSplash := NewLoadingSplash(ctx, "Refreshing the list...")
+		loadingSplash.Window.Show()
+		RefreshListData(ctx)
+		loadingSplash.Close()
 	})
 
 	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
-		addView := NewResourceAddWindow(app)
+		addView := NewResourceAddView(ctx)
 
-		loadingSplash := NewLoadingWindow(app, "Adding the resource...")
-		addView.OnButtonBefore = func() {
-			app.CreateNewWindowAndShow(loadingSplash.Window)
-		}
+		loadingSplash := NewLoadingSplash(ctx, "Adding the resource...")
+		addView.SetOnButtonBeforeEvent(func() {
+			loadingSplash.Window.Show()
+		})
 
-		addView.OnButtonError = func() {
-			loadingSplash.StopLoading()
-		}
+		addView.SetOnButtonErrorEvent(func() {
+			loadingSplash.Close()
+		})
 
-		addView.OnButtonClick = func() {
+		addView.SetOnButtonClickEvent(func() {
 			loadingSplash.UpdateText("Refreshing the list...")
-			RefreshListData(app)
-			loadingSplash.StopLoading()
-		}
+			RefreshListData(ctx)
+			loadingSplash.Close()
+		})
 
-		app.CreateNewWindowAndShow(addView.Window)
+		addView.Window.Show()
 	})
 
-	image := canvas.NewImageFromResource(bundle.ResourceAssetsImagesAmnesialogoPng)
+	image := canvas.NewImageFromResource(bundles.ResourceAmnesiaLogoPng)
 	image.FillMode = canvas.ImageFillOriginal
 
 	containerBox := container.NewBorder(
@@ -196,38 +207,37 @@ func NewListWindow(app *contexts.AppContext) (*ListWindow, fyne.Size) {
 	)
 	view.Container = containerBox
 
-	size := fyne.NewSize(400, 600)
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(size)
-	(*view.Window).CenterOnScreen()
+	view.Window.SetContent(view.Container)
+	view.Window.Resize(fyne.NewSize(400, 600))
+	view.Window.CenterOnScreen()
 
-	return view, size
+	return view
 }
 
-func RefreshListData(app *contexts.AppContext) {
-	resources, err := passbolt.GetResources(app, api.GetResourcesOptions{})
+func RefreshListData(ctx amnesiaApp.AppContext) {
+	resources, err := passbolt.GetResources(ctx, api.GetResourcesOptions{})
 
 	if err != nil {
 		errMsg := fmt.Sprintf("There was error while refreshing the list: %s", err)
 		logger.LogErr.Println(errMsg)
 
-		errView := NewErrorWindow(app, errMsg)
-		app.CreateNewWindowAndShow(errView.Window)
+		errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+		errView.Window.Show()
 	}
 
-	RealNameList = []string{}
-	RealTokenIdMap = make(map[string]interface{})
-	Resources = &resources
+	protecetedNameList = []string{}
+	protectedTokenIdMap = make(map[string]interface{})
+	resourcesList = resources
 
-	for i, r := range *Resources {
-		RealNameList = append(RealNameList, r.Name)
-		RealTokenIdMap[strconv.Itoa(i)] = r.ID
+	for i, r := range resourcesList {
+		protecetedNameList = append(protecetedNameList, r.Name)
+		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
 	}
 
-	LookupNameList.Set(RealNameList)
-	LookupTokenMap.Set(RealTokenIdMap)
+	lookupNameList.Set(protecetedNameList)
+	lookupTokenMap.Set(protectedTokenIdMap)
 
-	Search.SetText("")
-	List.Refresh()
+	searchWidget.SetText("")
+	listWidget.Refresh()
 
 }
