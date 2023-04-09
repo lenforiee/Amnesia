@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/app"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
 	"github.com/lenforiee/AmnesiaGUI/app/models"
 	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
@@ -26,7 +26,7 @@ type ResourceAddView struct {
 	Container *fyne.Container
 }
 
-func NewResourceAddView(ctx app.AppContext) ResourceAddView {
+func NewResourceAddView(ctx amnesiaApp.AppContext) ResourceAddView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Add Resource", ctx.AppName))
 
