@@ -8,21 +8,20 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 )
 
 type ConfirmWindow struct {
-	Window    *fyne.Window
+	Window    fyne.Window
 	OnYes     func()
 	Container *fyne.Container
 }
 
-func NewConfirmWindow(app *contexts.AppContext, msg string) *ConfirmWindow {
+func NewConfirmWindow(ctx *amnesiaApp.AppContext, msg string) ConfirmWindow {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Confirm", app.AppName))
-	view := &ConfirmWindow{
-		Window:    &window,
-		Container: nil,
+	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Confirm", ctx.AppName))
+	view := ConfirmWindow{
+		Window: window,
 	}
 	errorLabel := widget.NewLabelWithStyle("Warning!",
 		fyne.TextAlignCenter,
@@ -33,12 +32,12 @@ func NewConfirmWindow(app *contexts.AppContext, msg string) *ConfirmWindow {
 	errorInfo.Wrapping = fyne.TextWrapWord
 
 	yesBtn := widget.NewButton("Yes", func() {
-		(*view.Window).Close()
-		(*view).OnYes()
+		view.Window.Close()
+		view.OnYes()
 	})
 
 	noBtn := widget.NewButton("No", func() {
-		(*view.Window).Close()
+		view.Window.Close()
 	})
 
 	containerBox := container.NewBorder(
@@ -54,8 +53,8 @@ func NewConfirmWindow(app *contexts.AppContext, msg string) *ConfirmWindow {
 	)
 	view.Container = containerBox
 
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(fyne.NewSize(400, 100))
-	(*view.Window).CenterOnScreen()
+	view.Window.SetContent(view.Container)
+	view.Window.Resize(fyne.NewSize(400, 100))
+	view.Window.CenterOnScreen()
 	return view
 }
