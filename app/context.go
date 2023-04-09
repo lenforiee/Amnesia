@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/driver/desktop"
 	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
+	"github.com/lenforiee/AmnesiaGUI/bundles"
 	"github.com/passbolt/go-passbolt/api"
 )
 
@@ -19,6 +21,19 @@ type AppContext struct {
 
 func NewAppContext() AppContext {
 	return AppContext{}
+}
+
+func (a *AppContext) InitialiseSystemTray() {
+	if desk, ok := a.App.(desktop.App); ok {
+		item := fyne.NewMenuItem("Show", func() {
+			a.MainWindow.Show()
+			// TODO: Add a gourotine to check if the connector is still connected.
+		})
+
+		m := fyne.NewMenu(a.AppName, item)
+		desk.SetSystemTrayMenu(m)
+		desk.SetSystemTrayIcon(bundles.ResourceLogoPng)
+	}
 }
 
 func (a *AppContext) SetAppName(name string) {
