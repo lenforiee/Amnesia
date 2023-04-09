@@ -58,3 +58,7 @@ func NewConfirmView(ctx amnesiaApp.AppContext, msg string) ConfirmView {
 	view.Window.CenterOnScreen()
 	return view
 }
+
+func (v ConfirmView) SetOnYesEvent(callback func()) {
+	v.OnYes = callback
+}
