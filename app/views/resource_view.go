@@ -9,22 +9,21 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"golang.design/x/clipboard"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/models"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/models"
 )
 
-type ResourceWindow struct {
-	Window    *fyne.Window
+type ResourceView struct {
+	Window    fyne.Window
 	Container *fyne.Container
 }
 
-func NewResourceWindow(app *contexts.AppContext, token string, resource *models.Resource) *ResourceWindow {
+func NewResourceView(ctx amnesiaApp.AppContext, token string, resource models.Resource) ResourceView {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: View Resource", app.AppName))
+	window := ctx.App.NewWindow(fmt.Sprintf("%s :: View Resource", ctx.AppName))
 
-	view := &ResourceWindow{
-		Window:    &window,
-		Container: nil,
+	view := ResourceView{
+		Window: window,
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
@@ -95,14 +94,14 @@ func NewResourceWindow(app *contexts.AppContext, token string, resource *models.
 	})
 
 	editBtn := widget.NewButton("Edit", func() {
-		(*view.Window).Close()
+		view.Window.Close()
 
-		window := NewResourceEditWindow(app, token, resource)
-		(*app).CreateNewWindowAndShow(window.Window)
+		editView := NewResourceEditView(ctx, token, resource)
+		editView.Window.Show()
 	})
 
 	closeBtn := widget.NewButton("Close", func() {
-		(*view.Window).Close()
+		view.Window.Close()
 	})
 
 	containerBox := container.New(
@@ -128,8 +127,8 @@ func NewResourceWindow(app *contexts.AppContext, token string, resource *models.
 	)
 	view.Container = containerBox
 
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(fyne.NewSize(350, 100))
-	(*view.Window).CenterOnScreen()
+	view.Window.SetContent(view.Container)
+	view.Window.Resize(fyne.NewSize(350, 100))
+	view.Window.CenterOnScreen()
 	return view
 }
