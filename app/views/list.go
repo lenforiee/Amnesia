@@ -38,7 +38,7 @@ var (
 	searchWidget *widget.Entry
 )
 
-func NewListWindow(ctx amnesiaApp.AppContext) ListView {
+func NewListView(ctx amnesiaApp.AppContext) ListView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Account List", ctx.AppName))
 	view := ListView{
