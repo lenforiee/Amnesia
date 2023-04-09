@@ -1,14 +1,63 @@
-package passbolt
+package usecases
 
 import (
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/models"
-	"github.com/passbolt/go-passbolt/api"
+	"context"
+	"net/http"
+	"os"
+
+	"github.com/lenforiee/AmnesiaGUI/app/models"
 	"github.com/passbolt/go-passbolt/helper"
+
+	"github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/mfa"
+	"github.com/passbolt/go-passbolt/api"
 )
 
-func GetResources(app *contexts.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
-	resources, err := app.PassboltClient.GetResources(*app.Context, &opts)
+func InitialisePassboltConnector(ctx app.AppContext, password string) error {
+	// read the private key file
+	privateKey, err := os.ReadFile(ctx.UserSettings.PrivateKeyPath)
+	if err != nil {
+		return err
+	}
+
+	client, err := api.NewClient(
+		nil, ctx.UserSettings.UserAgent, ctx.UserSettings.ServerURI, string(privateKey), password,
+	)
+
+	client.MFACallback = func(respCtx context.Context, c *api.Client, res *api.APIResponse) (http.Cookie, error) {
+
+		// Use channels to tranmit the cookie data as passbolt mfa callback is bit weird.
+		mfaChan := make(chan http.Cookie)
+		errChan := make(chan error)
+
+		mfaView := mfa.NewMFAView(ctx, respCtx, c, res, mfaChan, errChan)
+		mfaView.Window.Show()
+
+		select {
+		case mfaCookie := <-mfaChan:
+			mfaView.Window.Close()
+			return mfaCookie, nil
+		case err := <-errChan:
+			mfaView.Window.Close()
+			return http.Cookie{}, err
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	err = client.Login(ctx.Context)
+	if err != nil {
+		return err
+	}
+
+	ctx.SetPassboltClient(client)
+	return nil
+}
+
+func GetResources(ctx app.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
+	resources, err := ctx.PassboltClient.GetResources(ctx.Context, &opts)
 	if err != nil {
 		return nil, err
 	}
@@ -16,17 +65,38 @@ func GetResources(app *contexts.AppContext, opts api.GetResourcesOptions) ([]api
 	return resources, nil
 }
 
-func GetResource(app *contexts.AppContext, id string) (*models.Resource, error) {
-	resource, err := models.NewResource(helper.GetResource(*app.Context, app.PassboltClient, id))
+func GetResource(ctx app.AppContext, id string) (models.Resource, error) {
+	resource := models.NewResource()
+
+	folderId, name, username, uri, password, desc, err := helper.GetResource(
+		ctx.Context, ctx.PassboltClient, id,
+	)
+
 	if err != nil {
-		return nil, err
+		return resource, err
 	}
+
+	resource.SetFolderParentID(folderId)
+	resource.SetName(name)
+	resource.SetUsername(username)
+	resource.SetURI(uri)
+	resource.SetPassword(password)
+	resource.SetDescription(desc)
 
 	return resource, nil
 }
 
-func CreateResource(app *contexts.AppContext, resource *models.Resource) error {
-	_, err := helper.CreateResource(*app.Context, app.PassboltClient, resource.FolderParentID, resource.Name, resource.Username, resource.URI, resource.Password, resource.Description)
+func CreateResource(ctx app.AppContext, resource models.Resource) error {
+	_, err := helper.CreateResource(
+		ctx.Context,
+		ctx.PassboltClient,
+		resource.FolderParentID,
+		resource.Name,
+		resource.Username,
+		resource.URI,
+		resource.Password,
+		resource.Description,
+	)
 	if err != nil {
 		return err
 	}
@@ -34,8 +104,17 @@ func CreateResource(app *contexts.AppContext, resource *models.Resource) error {
 	return nil
 }
 
-func UpdateResource(app *contexts.AppContext, id string, resource *models.Resource) error {
-	err := helper.UpdateResource(*app.Context, app.PassboltClient, id, resource.Name, resource.Username, resource.URI, resource.Password, resource.Description)
+func UpdateResource(ctx app.AppContext, id string, resource models.Resource) error {
+	err := helper.UpdateResource(
+		ctx.Context,
+		ctx.PassboltClient,
+		id,
+		resource.Name,
+		resource.Username,
+		resource.URI,
+		resource.Password,
+		resource.Description,
+	)
 	if err != nil {
 		return err
 	}
@@ -43,8 +122,8 @@ func UpdateResource(app *contexts.AppContext, id string, resource *models.Resour
 	return nil
 }
 
-func DeleteResource(app *contexts.AppContext, id string) error {
-	err := helper.DeleteResource(*app.Context, app.PassboltClient, id)
+func DeleteResource(ctx app.AppContext, id string) error {
+	err := helper.DeleteResource(ctx.Context, ctx.PassboltClient, id)
 	if err != nil {
 		return err
 	}
