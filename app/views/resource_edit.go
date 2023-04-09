@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/app"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
 	"github.com/lenforiee/AmnesiaGUI/app/models"
 	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
@@ -20,7 +20,7 @@ type ResourceEditView struct {
 }
 
 // TODO: fix this function, it consistantly crashes the app.
-func NewResourceEditView(ctx app.AppContext, token string, resource models.Resource) ResourceEditView {
+func NewResourceEditView(ctx amnesiaApp.AppContext, token string, resource models.Resource) ResourceEditView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Edit Resource", ctx.AppName))
 
