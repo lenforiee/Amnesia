@@ -8,29 +8,28 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/models"
-	"github.com/lenforiee/AmnesiaGUI/utils/logger"
-	"github.com/lenforiee/AmnesiaGUI/utils/passbolt"
+	"github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/models"
+	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
 )
 
-type ResourceEditWindow struct {
-	Window    *fyne.Window
+type ResourceEditView struct {
+	Window    fyne.Window
 	Container *fyne.Container
 }
 
 // TODO: fix this function, it consistantly crashes the app.
-func NewResourceEditWindow(app *contexts.AppContext, token string, resource *models.Resource) *ResourceEditWindow {
+func NewResourceEditView(ctx app.AppContext, token string, resource models.Resource) ResourceEditView {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Edit Resource", app.AppName))
+	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Edit Resource", ctx.AppName))
 
-	view := &ResourceEditWindow{
-		Window:    &window,
-		Container: nil,
+	view := ResourceEditView{
+		Window: window,
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
-		"Resource Name(*)",
+		"Resource Name (*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -62,7 +61,7 @@ func NewResourceEditWindow(app *contexts.AppContext, token string, resource *mod
 	itemUri.SetText(resource.URI)
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Password(*)",
+		"Password (*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -86,58 +85,58 @@ func NewResourceEditWindow(app *contexts.AppContext, token string, resource *mod
 	asteriskLabel := widget.NewLabel("(*) - Required field.")
 
 	saveBtn := widget.NewButton("Save", func() {
-		saveResource := models.Resource{
-			FolderParentID: "",
-			Name:           itemName.Text,
-			Username:       itemUsername.Text,
-			URI:            itemUri.Text,
-			Password:       itemPasswd.Text,
-			Description:    itemDesc.Text,
-		}
-		err := passbolt.UpdateResource(app, token, &saveResource)
+		saveResource := models.NewResource()
+		saveResource.SetFolderParentID(resource.FolderParentID)
+		saveResource.SetName(itemName.Text)
+		saveResource.SetUsername(itemUsername.Text)
+		saveResource.SetURI(itemUri.Text)
+		saveResource.SetPassword(itemPasswd.Text)
+		saveResource.SetDescription(itemDesc.Text)
+
+		err := passbolt.UpdateResource(ctx, token, saveResource)
 		if err != nil {
 			errMsg := fmt.Sprintf("There was error while updating resource: %s", err)
 			logger.LogErr.Println(errMsg)
 
-			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowAndShow(errView.Window)
+			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+			errView.Window.Show()
 			return
 		}
 
 		// views/list.go
-		RefreshListData(app)
-
-		(*view.Window).Close()
+		RefreshListData(ctx)
+		view.Window.Close()
 	})
 
 	deleteBtn := widget.NewButton("Delete", func() {
-		confirmView := NewConfirmWindow(app, "Are you sure you want to delete this resource?")
-		confirmView.OnYes = func() {
-			loadingSplash := NewLoadingWindow(app, "Removing the resource...")
-			app.CreateNewWindowAndShow(loadingSplash.Window)
-			err := passbolt.DeleteResource(app, token)
+		confirmView := NewConfirmView(ctx, "Are you sure you want to delete this resource?")
+		confirmView.SetOnYesEvent(func() {
+			loadingSplash := NewLoadingSplash(ctx, "Removing the resource...")
+			loadingSplash.Window.Show()
+
+			err := passbolt.DeleteResource(ctx, token)
 			if err != nil {
 				errMsg := fmt.Sprintf("There was error while deleting resource: %s", err)
 				logger.LogErr.Println(errMsg)
 
-				errView := NewErrorWindow(app, errMsg)
-				app.CreateNewWindowAndShow(errView.Window)
-				loadingSplash.StopLoading()
+				errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+				errView.Window.Show()
+				loadingSplash.Close()
 				return
 			}
 
 			// views/list.go
 			loadingSplash.UpdateText("Refreshing the list...")
-			RefreshListData(app)
-			loadingSplash.StopLoading()
-		}
+			RefreshListData(ctx)
+			loadingSplash.Close()
+		})
 
-		app.CreateNewWindowAndShow(confirmView.Window)
-		(*view.Window).Close()
+		confirmView.Window.Show()
+		view.Window.Close()
 	})
 
 	closeBtn := widget.NewButton("Close", func() {
-		(*view.Window).Close()
+		view.Window.Close()
 	})
 
 	containerBox := container.New(
@@ -160,8 +159,8 @@ func NewResourceEditWindow(app *contexts.AppContext, token string, resource *mod
 	)
 	view.Container = containerBox
 
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(fyne.NewSize(350, 100))
-	(*view.Window).CenterOnScreen()
+	view.Window.SetContent(view.Container)
+	view.Window.Resize(fyne.NewSize(350, 100))
+	view.Window.CenterOnScreen()
 	return view
 }
