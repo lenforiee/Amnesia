@@ -163,3 +163,15 @@ func NewResourceAddView(ctx app.AppContext) ResourceAddView {
 	view.Window.CenterOnScreen()
 	return view
 }
+
+func (v *ResourceAddView) SetOnButtonBeforeEvent(callback func()) {
+	v.OnButtonBefore = callback
+}
+
+func (v *ResourceAddView) SetOnButtonErrorEvent(callback func()) {
+	v.OnButtonError = callback
+}
+
+func (v *ResourceAddView) SetOnButtonClickEvent(callback func()) {
+	v.OnButtonClick = callback
+}
