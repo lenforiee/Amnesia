@@ -8,12 +8,12 @@ import (
 	"github.com/lenforiee/AmnesiaGUI/app/models"
 	"github.com/passbolt/go-passbolt/helper"
 
-	"github.com/lenforiee/AmnesiaGUI/app"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 	"github.com/lenforiee/AmnesiaGUI/app/mfa"
 	"github.com/passbolt/go-passbolt/api"
 )
 
-func InitialisePassboltConnector(ctx app.AppContext, password string) error {
+func InitialisePassboltConnector(ctx amnesiaApp.AppContext, password string) error {
 	// read the private key file
 	privateKey, err := os.ReadFile(ctx.UserSettings.PrivateKeyPath)
 	if err != nil {
@@ -56,7 +56,7 @@ func InitialisePassboltConnector(ctx app.AppContext, password string) error {
 	return nil
 }
 
-func GetResources(ctx app.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
+func GetResources(ctx amnesiaApp.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
 	resources, err := ctx.PassboltClient.GetResources(ctx.Context, &opts)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func GetResources(ctx app.AppContext, opts api.GetResourcesOptions) ([]api.Resou
 	return resources, nil
 }
 
-func GetResource(ctx app.AppContext, id string) (models.Resource, error) {
+func GetResource(ctx amnesiaApp.AppContext, id string) (models.Resource, error) {
 	resource := models.NewResource()
 
 	folderId, name, username, uri, password, desc, err := helper.GetResource(
@@ -86,7 +86,7 @@ func GetResource(ctx app.AppContext, id string) (models.Resource, error) {
 	return resource, nil
 }
 
-func CreateResource(ctx app.AppContext, resource models.Resource) error {
+func CreateResource(ctx amnesiaApp.AppContext, resource models.Resource) error {
 	_, err := helper.CreateResource(
 		ctx.Context,
 		ctx.PassboltClient,
@@ -104,7 +104,7 @@ func CreateResource(ctx app.AppContext, resource models.Resource) error {
 	return nil
 }
 
-func UpdateResource(ctx app.AppContext, id string, resource models.Resource) error {
+func UpdateResource(ctx amnesiaApp.AppContext, id string, resource models.Resource) error {
 	err := helper.UpdateResource(
 		ctx.Context,
 		ctx.PassboltClient,
@@ -122,7 +122,7 @@ func UpdateResource(ctx app.AppContext, id string, resource models.Resource) err
 	return nil
 }
 
-func DeleteResource(ctx app.AppContext, id string) error {
+func DeleteResource(ctx amnesiaApp.AppContext, id string) error {
 	err := helper.DeleteResource(ctx.Context, ctx.PassboltClient, id)
 	if err != nil {
 		return err
