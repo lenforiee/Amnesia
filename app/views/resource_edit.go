@@ -20,7 +20,7 @@ type ResourceEditView struct {
 }
 
 // TODO: fix this function, it consistantly crashes the app.
-func NewResourceEditView(ctx amnesiaApp.AppContext, token string, resource models.Resource) ResourceEditView {
+func NewResourceEditView(ctx *amnesiaApp.AppContext, token string, resource models.Resource) ResourceEditView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Edit Resource", ctx.AppName))
 
@@ -111,8 +111,6 @@ func NewResourceEditView(ctx amnesiaApp.AppContext, token string, resource model
 	deleteBtn := widget.NewButton("Delete", func() {
 		confirmView := NewConfirmView(ctx, "Are you sure you want to delete this resource?")
 		confirmView.SetOnYesEvent(func() {
-			loadingSplash := NewLoadingSplash(ctx, "Removing the resource...")
-			loadingSplash.Window.Show()
 
 			err := passbolt.DeleteResource(ctx, token)
 			if err != nil {
@@ -121,14 +119,11 @@ func NewResourceEditView(ctx amnesiaApp.AppContext, token string, resource model
 
 				errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
 				errView.Window.Show()
-				loadingSplash.Close()
 				return
 			}
 
 			// views/list.go
-			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(ctx)
-			loadingSplash.Close()
 		})
 
 		confirmView.Window.Show()
