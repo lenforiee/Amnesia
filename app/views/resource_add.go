@@ -18,19 +18,17 @@ type ResourceAddView struct {
 	Window fyne.Window
 
 	// allow us to have some action in view itself.
-	OnButtonBefore func()
-	OnButtonError  func()
-	OnButtonClick  func()
+	OnButtonClick func()
 
 	Button    *widget.Button
 	Container *fyne.Container
 }
 
-func NewResourceAddView(ctx amnesiaApp.AppContext) ResourceAddView {
+func NewResourceAddView(ctx *amnesiaApp.AppContext) *ResourceAddView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Add Resource", ctx.AppName))
 
-	view := ResourceAddView{
+	view := &ResourceAddView{
 		Window: window,
 	}
 
@@ -82,8 +80,6 @@ func NewResourceAddView(ctx amnesiaApp.AppContext) ResourceAddView {
 
 	submitBtn := widget.NewButton("Submit", func() {
 
-		view.OnButtonBefore()
-
 		var emptyFields []string
 
 		if itemName.Text == "" {
@@ -106,7 +102,6 @@ func NewResourceAddView(ctx amnesiaApp.AppContext) ResourceAddView {
 
 			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
 			errView.Window.Show()
-			view.OnButtonError()
 			return
 		}
 
@@ -162,14 +157,6 @@ func NewResourceAddView(ctx amnesiaApp.AppContext) ResourceAddView {
 	view.Window.Resize(fyne.NewSize(350, 100))
 	view.Window.CenterOnScreen()
 	return view
-}
-
-func (v *ResourceAddView) SetOnButtonBeforeEvent(callback func()) {
-	v.OnButtonBefore = callback
-}
-
-func (v *ResourceAddView) SetOnButtonErrorEvent(callback func()) {
-	v.OnButtonError = callback
 }
 
 func (v *ResourceAddView) SetOnButtonClickEvent(callback func()) {
