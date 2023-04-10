@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/app"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 	"github.com/passbolt/go-passbolt/api"
 )
 
@@ -25,7 +25,7 @@ type MFAView struct {
 }
 
 func NewMFAView(
-	ctx app.AppContext,
+	ctx *amnesiaApp.AppContext,
 	ctxResp context.Context,
 	c *api.Client,
 	res *api.APIResponse,
