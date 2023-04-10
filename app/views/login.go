@@ -24,7 +24,11 @@ type LoginView struct {
 	Container *fyne.Container
 }
 
-func NewLoginView(ctx app.AppContext) LoginView {
+var (
+	loginBtn *widget.Button
+)
+
+func NewLoginView(ctx *app.AppContext) LoginView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Login", ctx.AppName))
 	view := LoginView{
@@ -119,12 +123,13 @@ func NewLoginView(ctx app.AppContext) LoginView {
 	}
 
 	loginFunc := func(password string) {
-		go OnClickLogin(ctx, password, window)
+		OnClickLogin(ctx, password, window)
 	}
 
 	loginButton := widget.NewButton("Login", func() {
 		loginFunc(itemPasswd.Text)
 	})
+	loginBtn = loginButton
 
 	itemPasswd.OnSubmitted = func(_ string) {
 		loginFunc(itemPasswd.Text)
@@ -172,8 +177,9 @@ func NewLoginView(ctx app.AppContext) LoginView {
 	return view
 }
 
-func OnClickLogin(ctx app.AppContext, password string, loginWindow fyne.Window) {
-	loadingSplash := NewLoadingSplash(ctx, "Logging in...")
+func OnClickLogin(ctx *app.AppContext, password string, loginWindow fyne.Window) {
+	loginBtn.SetText("Logging in...")
+	loginBtn.Disable()
 	if err := passbolt.InitialisePassboltConnector(ctx, password); err != nil {
 		errMsg := fmt.Sprintf("There was error while initialising passbolt client: %s", err)
 		logger.LogErr.Println(errMsg)
@@ -191,12 +197,12 @@ func OnClickLogin(ctx app.AppContext, password string, loginWindow fyne.Window) 
 
 		errView := NewErrorView(ctx.App, ctx.AppName, errProperMessage, false)
 		errView.Window.Show()
+
+		loginBtn.SetText("Login")
+		loginBtn.Enable()
 		return
 	}
 
-	loginWindow.Close()
-	loadingSplash.Window.Close()
-
-	// view, size := NewListWindow(app)
-	// app.UpdateMainWindow(view.Window, size)
+	view := NewListView(ctx)
+	ctx.UpdateMainWindow(view.Window, view.Size)
 }
