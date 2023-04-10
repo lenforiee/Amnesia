@@ -14,13 +14,16 @@ import (
 	"fyne.io/fyne/v2/widget"
 	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
 	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/usecases/format"
 	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
 	"github.com/lenforiee/AmnesiaGUI/bundles"
 	"github.com/passbolt/go-passbolt/api"
 )
 
 type ListView struct {
-	Window    fyne.Window
+	Window fyne.Window
+
+	Size      fyne.Size
 	Container *fyne.Container
 }
 
@@ -34,11 +37,12 @@ var (
 
 	resourcesList []api.Resource
 
-	listWidget   *widget.List
-	searchWidget *widget.Entry
+	refreshBtnWidget *widget.Button
+	listWidget       *widget.List
+	searchWidget     *widget.Entry
 )
 
-func NewListView(ctx amnesiaApp.AppContext) ListView {
+func NewListView(ctx *amnesiaApp.AppContext) ListView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Account List", ctx.AppName))
 	view := ListView{
@@ -58,13 +62,9 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 		protecetedNameList = append(protecetedNameList, r.Name)
 		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
 		if r.Username == "" {
-			formattedNameList.Append(fmt.Sprintf("%s", r.Name))
+			formattedNameList.Append(r.Name)
 		} else {
-			username := r.Username
-			if len(username) > 16 {
-				username = fmt.Sprintf("%s...", strings.Split(r.Username, "")[:16])
-			}
-			formattedNameList.Append(fmt.Sprintf("%s - %s", r.Name, username))
+			formattedNameList.Append(fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)))
 		}
 	}
 
@@ -86,9 +86,6 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 	list.OnSelected = func(id widget.ListItemID) {
 		list.Unselect(id)
 
-		loadingSplash := NewLoadingSplash(ctx, "Loading resource...")
-		loadingSplash.Window.Show()
-
 		token, err := lookupTokenMap.GetValue(strconv.Itoa(id))
 		if err != nil {
 			errMsg := fmt.Sprintf("There was error while getting token value: %s", err)
@@ -96,7 +93,6 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 
 			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
 			errView.Window.Show()
-			loadingSplash.Close()
 			return
 		}
 
@@ -107,13 +103,11 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 
 			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
 			errView.Window.Show()
-			loadingSplash.Close()
 			return
 		}
 
 		resourceView := NewResourceView(ctx, token.(string), resource)
 		resourceView.Window.Show()
-		loadingSplash.Close()
 
 	}
 	listWidget = list
@@ -132,15 +126,27 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 
 		var filteredData = []string{}
 		var filteredTokenIdMap = make(map[string]interface{})
+		var filteredFormattedNameList = []string{}
 		for _, r := range resourcesList {
 			if strings.Contains(strings.ToLower(r.Name), strings.ToLower(s)) {
 				filteredData = append(filteredData, r.Name)
 				filteredTokenIdMap[strconv.Itoa(len(filteredData)-1)] = r.ID
+
+				if r.Username == "" {
+					filteredFormattedNameList = append(filteredFormattedNameList, r.Name)
+				} else {
+					filteredFormattedNameList = append(
+						filteredFormattedNameList,
+						fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)),
+					)
+				}
 			}
 		}
 
 		lookupNameList.Set(filteredData)
 		lookupTokenMap.Set(filteredTokenIdMap)
+		formattedNameList.Set(filteredFormattedNameList)
+
 		list.Refresh()
 	}
 	searchWidget = search
@@ -151,28 +157,15 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 
 	// create refresh button
 	refreshBtn := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
-		loadingSplash := NewLoadingSplash(ctx, "Refreshing the list...")
-		loadingSplash.Window.Show()
 		RefreshListData(ctx)
-		loadingSplash.Close()
 	})
+	refreshBtnWidget = refreshBtn
 
 	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
 		addView := NewResourceAddView(ctx)
 
-		loadingSplash := NewLoadingSplash(ctx, "Adding the resource...")
-		addView.SetOnButtonBeforeEvent(func() {
-			loadingSplash.Window.Show()
-		})
-
-		addView.SetOnButtonErrorEvent(func() {
-			loadingSplash.Close()
-		})
-
 		addView.SetOnButtonClickEvent(func() {
-			loadingSplash.UpdateText("Refreshing the list...")
 			RefreshListData(ctx)
-			loadingSplash.Close()
 		})
 
 		addView.Window.Show()
@@ -206,15 +199,17 @@ func NewListView(ctx amnesiaApp.AppContext) ListView {
 		list,
 	)
 	view.Container = containerBox
+	view.Size = fyne.NewSize(400, 600)
 
 	view.Window.SetContent(view.Container)
-	view.Window.Resize(fyne.NewSize(400, 600))
+	view.Window.Resize(view.Size)
 	view.Window.CenterOnScreen()
 
 	return view
 }
 
-func RefreshListData(ctx amnesiaApp.AppContext) {
+func RefreshListData(ctx *amnesiaApp.AppContext) {
+	refreshBtnWidget.Disable()
 	resources, err := passbolt.GetResources(ctx, api.GetResourcesOptions{})
 
 	if err != nil {
@@ -228,16 +223,27 @@ func RefreshListData(ctx amnesiaApp.AppContext) {
 	protecetedNameList = []string{}
 	protectedTokenIdMap = make(map[string]interface{})
 	resourcesList = resources
+	newFormattedNameList := []string{}
 
 	for i, r := range resourcesList {
 		protecetedNameList = append(protecetedNameList, r.Name)
 		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
+
+		if r.Username == "" {
+			newFormattedNameList = append(newFormattedNameList, r.Name)
+		} else {
+			newFormattedNameList = append(
+				newFormattedNameList,
+				fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)),
+			)
+		}
 	}
 
 	lookupNameList.Set(protecetedNameList)
 	lookupTokenMap.Set(protectedTokenIdMap)
+	formattedNameList.Set(newFormattedNameList)
 
 	searchWidget.SetText("")
 	listWidget.Refresh()
-
+	refreshBtnWidget.Enable()
 }
