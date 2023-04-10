@@ -14,7 +14,7 @@ type UserSettings struct {
 	RememberMe     bool   `json:"remember_me"`
 }
 
-func GetOSSaveDir() (userDir string) {
+func GetSaveDir() (userDir string) {
 
 	if runtime.GOOS == "windows" {
 		userDir = os.Getenv("APPDATA")
@@ -27,7 +27,7 @@ func GetOSSaveDir() (userDir string) {
 }
 
 func NewUserSettings() (s UserSettings, err error) {
-	userDir := GetOSSaveDir()
+	userDir := GetSaveDir()
 
 	s = UserSettings{
 		UserAgent:      "",
@@ -58,7 +58,7 @@ func NewUserSettings() (s UserSettings, err error) {
 }
 
 func LoadUserSettings() (s UserSettings, err error) {
-	userDir := GetOSSaveDir()
+	userDir := GetSaveDir()
 
 	// TLDR: this has to stay config.json for compatibility reasons.
 	_, err = os.Stat(fmt.Sprintf("%s/amnesia/config.json", userDir))
@@ -81,7 +81,7 @@ func LoadUserSettings() (s UserSettings, err error) {
 
 func (s *UserSettings) SaveUserSettings() (err error) {
 
-	userDir := GetOSSaveDir()
+	userDir := GetSaveDir()
 	file, err := json.Marshal(s)
 	if err != nil {
 		return err
