@@ -97,10 +97,11 @@ func main() {
 	logger.LogInfo.Print("Done!")
 
 	logger.LogInfo.Print("Initialising main view...")
-	mainView := views.NewLoginView(ctx)
+	mainView := views.NewLoginView(&ctx)
 	ctx.SetMainWindow(mainView.Window)
 	logger.LogInfo.Print("Done!")
 
 	logger.LogInfo.Print("App initialised!")
+	ctx.InitialiseSystemTray()
 	ctx.MainWindow.ShowAndRun()
 }
