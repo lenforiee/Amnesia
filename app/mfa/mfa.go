@@ -35,8 +35,7 @@ func NewMFAView(
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: MFA", ctx.AppName))
 	view := MFAView{
-		Window:    window,
-		Container: nil,
+		Window: window,
 	}
 
 	mfaLabel := widget.NewLabelWithStyle(
