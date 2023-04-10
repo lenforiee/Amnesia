@@ -24,16 +24,27 @@ func NewAppContext() AppContext {
 }
 
 func (a *AppContext) InitialiseSystemTray() {
-	if desk, ok := a.App.(desktop.App); ok {
+	desk, ok := a.App.(desktop.App)
+	if ok {
 		item := fyne.NewMenuItem("Show", func() {
+			if !a.PassboltClient.CheckSession(a.Context) {
+				a.PassboltClient.Login(a.Context)
+			}
+
 			a.MainWindow.Show()
-			// TODO: Add a gourotine to check if the connector is still connected.
 		})
 
 		m := fyne.NewMenu(a.AppName, item)
 		desk.SetSystemTrayMenu(m)
 		desk.SetSystemTrayIcon(bundles.ResourceLogoPng)
 	}
+}
+
+func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size) {
+	a.MainWindow.SetTitle(window.Title())
+	a.MainWindow.SetContent(window.Content())
+	a.MainWindow.Resize(size)
+	a.MainWindow.CenterOnScreen()
 }
 
 func (a *AppContext) SetAppName(name string) {
