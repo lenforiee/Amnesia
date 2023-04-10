@@ -18,7 +18,7 @@ type ResourceView struct {
 	Container *fyne.Container
 }
 
-func NewResourceView(ctx amnesiaApp.AppContext, token string, resource models.Resource) ResourceView {
+func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.Resource) ResourceView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: View Resource", ctx.AppName))
 
