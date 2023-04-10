@@ -2,10 +2,19 @@ package passbolt
 
 import (
 	"context"
+	b64 "encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
 	"github.com/lenforiee/AmnesiaGUI/app/models"
+	"github.com/lenforiee/AmnesiaGUI/app/usecases/aes"
 	"github.com/passbolt/go-passbolt/helper"
 
 	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
@@ -13,7 +22,75 @@ import (
 	"github.com/passbolt/go-passbolt/api"
 )
 
-func InitialisePassboltConnector(ctx amnesiaApp.AppContext, password string) error {
+func WaitForCookie(
+	ctx *amnesiaApp.AppContext,
+	ctxResp context.Context,
+	c *api.Client,
+	res *api.APIResponse,
+	password string,
+) (http.Cookie, error) {
+	// Use channels to tranmit the cookie data as passbolt mfa callback is bit weird.
+	mfaChan := make(chan http.Cookie)
+	errChan := make(chan error)
+
+	userDir := settings.GetSaveDir()
+
+	mfaView := mfa.NewMFAView(ctx, ctxResp, c, res, mfaChan, errChan)
+	mfaView.Window.Show()
+
+	select {
+	case mfaCookie := <-mfaChan:
+		mfaView.Window.Close()
+
+		if mfaCookie.Expires.IsZero() {
+			return mfaCookie, nil
+		}
+
+		// Save the cookie to file only if the user wants to remember the device.
+		// This is because the cookie is valid for a month.
+		cookieFile, err := os.Create(fmt.Sprintf("%s/amnesia/cookie.json", userDir))
+		if err != nil {
+			logger.LogErr.Printf("Failed to save cookie to file: %s", err)
+			return mfaCookie, nil
+		}
+
+		cookieData, err := json.Marshal(mfaCookie)
+		if err != nil {
+			logger.LogErr.Printf("Failed to marshal cookie data: %s", err)
+			return mfaCookie, nil
+		}
+
+		encryptPasswd := password
+		if len(encryptPasswd) < 32 { // pad the password to 32 bytes
+			encryptPasswd = password + "AMNESIAAMNESIAAMNESIAAMNESIA"
+		}
+
+		if len(encryptPasswd) > 32 {
+			encryptPasswd = encryptPasswd[:32]
+		}
+
+		encryptedCookie, iv, err := aes.Aes256Encode(cookieData, []byte(encryptPasswd))
+
+		if err != nil {
+			logger.LogErr.Printf("Failed to encrypt cookie data: %s", err)
+			return mfaCookie, nil
+		}
+
+		b64Content := b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s|||%s", encryptedCookie, iv)))
+		_, err = cookieFile.Write([]byte(b64Content))
+		if err != nil {
+			logger.LogErr.Printf("Failed to write cookie data to file: %s", err)
+			return mfaCookie, nil
+		}
+
+		return mfaCookie, nil
+	case err := <-errChan:
+		mfaView.Window.Close()
+		return http.Cookie{}, err
+	}
+}
+
+func InitialisePassboltConnector(ctx *amnesiaApp.AppContext, password string) error {
 	// read the private key file
 	privateKey, err := os.ReadFile(ctx.UserSettings.PrivateKeyPath)
 	if err != nil {
@@ -24,27 +101,68 @@ func InitialisePassboltConnector(ctx amnesiaApp.AppContext, password string) err
 		nil, ctx.UserSettings.UserAgent, ctx.UserSettings.ServerURI, string(privateKey), password,
 	)
 
-	client.MFACallback = func(respCtx context.Context, c *api.Client, res *api.APIResponse) (http.Cookie, error) {
-
-		// Use channels to tranmit the cookie data as passbolt mfa callback is bit weird.
-		mfaChan := make(chan http.Cookie)
-		errChan := make(chan error)
-
-		mfaView := mfa.NewMFAView(ctx, respCtx, c, res, mfaChan, errChan)
-		mfaView.Window.Show()
-
-		select {
-		case mfaCookie := <-mfaChan:
-			mfaView.Window.Close()
-			return mfaCookie, nil
-		case err := <-errChan:
-			mfaView.Window.Close()
-			return http.Cookie{}, err
-		}
-	}
-
 	if err != nil {
 		return err
+	}
+
+	client.MFACallback = func(respCtx context.Context, c *api.Client, res *api.APIResponse) (http.Cookie, error) {
+
+		userDir := settings.GetSaveDir()
+		_, err = os.Stat(fmt.Sprintf("%s/amnesia/cookie.json", userDir))
+		if os.IsNotExist(err) {
+			logger.LogWarn.Print("Cookie file does not exist, waiting for user input...")
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		cookieFile, err := os.Open(fmt.Sprintf("%s/amnesia/cookie.json", userDir))
+		if err != nil {
+			logger.LogErr.Printf("Failed to open cookie file: %s", err)
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		cookieData, err := io.ReadAll(cookieFile)
+		if err != nil {
+			logger.LogErr.Printf("Failed to read cookie file: %s", err)
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		b64Content, err := b64.StdEncoding.DecodeString(string(cookieData))
+		if err != nil {
+			logger.LogErr.Printf("Failed to decode cookie file (B64): %s", err)
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		cookieEncrypted := strings.Split(string(b64Content), "|||")
+
+		decryptPasswd := password
+		if len(decryptPasswd) < 32 { // pad the password to 32 bytes
+			decryptPasswd = password + "AMNESIAAMNESIAAMNESIAAMNESIA"
+		}
+
+		if len(decryptPasswd) > 32 {
+			decryptPasswd = decryptPasswd[:32]
+		}
+
+		cookieContent, err := aes.Aes256Decode([]byte(cookieEncrypted[0]), []byte(decryptPasswd), []byte(cookieEncrypted[1]))
+		if err != nil {
+			logger.LogErr.Printf("Failed to decrypt cookie file (AES): %s", err)
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		var cookie http.Cookie
+		err = json.Unmarshal(cookieContent, &cookie)
+		if err != nil {
+			logger.LogErr.Printf("Failed to unmarshal cookie file: %s", err)
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		if cookie.Expires.Unix() < time.Now().Unix() {
+			os.Remove(fmt.Sprintf("%s/amnesia/cookie.json", userDir))
+			logger.LogWarn.Println("Cookie expired, waiting user input...")
+			return WaitForCookie(ctx, respCtx, c, res, password)
+		}
+
+		return cookie, nil
 	}
 
 	err = client.Login(ctx.Context)
