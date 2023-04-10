@@ -17,10 +17,10 @@ type ConfirmView struct {
 	Container *fyne.Container
 }
 
-func NewConfirmView(ctx amnesiaApp.AppContext, msg string) ConfirmView {
+func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Confirm", ctx.AppName))
-	view := ConfirmView{
+	view := &ConfirmView{
 		Window: window,
 	}
 	errorLabel := widget.NewLabelWithStyle("Warning!",
@@ -59,6 +59,6 @@ func NewConfirmView(ctx amnesiaApp.AppContext, msg string) ConfirmView {
 	return view
 }
 
-func (v ConfirmView) SetOnYesEvent(callback func()) {
+func (v *ConfirmView) SetOnYesEvent(callback func()) {
 	v.OnYes = callback
 }
