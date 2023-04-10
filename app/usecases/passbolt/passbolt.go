@@ -90,6 +90,18 @@ func WaitForCookie(
 	}
 }
 
+func EnsureLoggedIn(ctx *amnesiaApp.AppContext) {
+	if ctx.PassboltClient.CheckSession(ctx.Context) {
+		return
+	}
+
+	err := ctx.PassboltClient.Login(ctx.Context)
+	if err != nil {
+		logger.LogErr.Printf("Failed to re-authenticate passbolt client: %s", err)
+		return
+	}
+}
+
 func InitialisePassboltConnector(ctx *amnesiaApp.AppContext, password string) error {
 	// read the private key file
 	privateKey, err := os.ReadFile(ctx.UserSettings.PrivateKeyPath)
@@ -174,7 +186,8 @@ func InitialisePassboltConnector(ctx *amnesiaApp.AppContext, password string) er
 	return nil
 }
 
-func GetResources(ctx amnesiaApp.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
+func GetResources(ctx *amnesiaApp.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
+	EnsureLoggedIn(ctx)
 	resources, err := ctx.PassboltClient.GetResources(ctx.Context, &opts)
 	if err != nil {
 		return nil, err
@@ -183,7 +196,8 @@ func GetResources(ctx amnesiaApp.AppContext, opts api.GetResourcesOptions) ([]ap
 	return resources, nil
 }
 
-func GetResource(ctx amnesiaApp.AppContext, id string) (models.Resource, error) {
+func GetResource(ctx *amnesiaApp.AppContext, id string) (models.Resource, error) {
+	EnsureLoggedIn(ctx)
 	resource := models.NewResource()
 
 	folderId, name, username, uri, password, desc, err := helper.GetResource(
@@ -204,7 +218,8 @@ func GetResource(ctx amnesiaApp.AppContext, id string) (models.Resource, error) 
 	return resource, nil
 }
 
-func CreateResource(ctx amnesiaApp.AppContext, resource models.Resource) error {
+func CreateResource(ctx *amnesiaApp.AppContext, resource models.Resource) error {
+	EnsureLoggedIn(ctx)
 	_, err := helper.CreateResource(
 		ctx.Context,
 		ctx.PassboltClient,
@@ -222,7 +237,8 @@ func CreateResource(ctx amnesiaApp.AppContext, resource models.Resource) error {
 	return nil
 }
 
-func UpdateResource(ctx amnesiaApp.AppContext, id string, resource models.Resource) error {
+func UpdateResource(ctx *amnesiaApp.AppContext, id string, resource models.Resource) error {
+	EnsureLoggedIn(ctx)
 	err := helper.UpdateResource(
 		ctx.Context,
 		ctx.PassboltClient,
@@ -240,7 +256,8 @@ func UpdateResource(ctx amnesiaApp.AppContext, id string, resource models.Resour
 	return nil
 }
 
-func DeleteResource(ctx amnesiaApp.AppContext, id string) error {
+func DeleteResource(ctx *amnesiaApp.AppContext, id string) error {
+	EnsureLoggedIn(ctx)
 	err := helper.DeleteResource(ctx.Context, ctx.PassboltClient, id)
 	if err != nil {
 		return err
