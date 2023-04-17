@@ -40,11 +40,11 @@ func (a *AppContext) InitialiseSystemTray() {
 	}
 }
 
-func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size, center bool) {
+func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size, centre bool) {
 	a.MainWindow.SetTitle(window.Title())
 	a.MainWindow.SetContent(window.Content())
 	a.MainWindow.Resize(size)
-	if center {
+	if centre {
 		a.MainWindow.CenterOnScreen()
 	}
 }
