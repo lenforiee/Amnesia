@@ -40,11 +40,18 @@ func (a *AppContext) InitialiseSystemTray() {
 	}
 }
 
-func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size) {
+func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size, center bool) {
 	a.MainWindow.SetTitle(window.Title())
 	a.MainWindow.SetContent(window.Content())
 	a.MainWindow.Resize(size)
-	a.MainWindow.CenterOnScreen()
+	if center {
+		a.MainWindow.CenterOnScreen()
+	}
+}
+
+func (a *AppContext) UpdateView(title string, content fyne.CanvasObject) {
+	a.MainWindow.SetTitle(title)
+	a.MainWindow.SetContent(content)
 }
 
 func (a *AppContext) SetAppName(name string) {

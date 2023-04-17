@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
@@ -15,7 +16,7 @@ import (
 )
 
 type ResourceAddView struct {
-	Window fyne.Window
+	Title string
 
 	// allow us to have some action in view itself.
 	OnButtonClick func()
@@ -24,12 +25,12 @@ type ResourceAddView struct {
 	Container *fyne.Container
 }
 
-func NewResourceAddView(ctx *amnesiaApp.AppContext) *ResourceAddView {
+func NewResourceAddView(ctx *amnesiaApp.AppContext, previousView ListView) *ResourceAddView {
 
-	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Add Resource", ctx.AppName))
+	title := fmt.Sprintf("%s :: Add Resource", ctx.AppName)
 
 	view := &ResourceAddView{
-		Window: window,
+		Title: title,
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
@@ -126,36 +127,37 @@ func NewResourceAddView(ctx *amnesiaApp.AppContext) *ResourceAddView {
 		}
 
 		view.OnButtonClick()
-		view.Window.Close()
+		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
 	view.Button = submitBtn
 
-	closeBtn := widget.NewButton("Close", func() {
-		view.Window.Close()
+	goBackBtn := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
+		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
 
 	containerBox := container.New(
-		layout.NewVBoxLayout(),
-		nameLabel,
-		itemName,
-		usernameLabel,
-		itemUsername,
-		uriLabel,
-		itemUri,
-		passwdLabel,
-		itemPasswd,
-		descLabel,
-		itemDesc,
-		asteriskLabel,
-		submitBtn,
-		widget.NewSeparator(),
-		closeBtn,
+		layout.NewPaddedLayout(),
+		container.NewVBox(
+			container.NewGridWithColumns(
+				6,
+				goBackBtn,
+			),
+			nameLabel,
+			itemName,
+			usernameLabel,
+			itemUsername,
+			uriLabel,
+			itemUri,
+			passwdLabel,
+			itemPasswd,
+			descLabel,
+			itemDesc,
+			asteriskLabel,
+			submitBtn,
+		),
 	)
-	view.Container = containerBox
 
-	view.Window.SetContent(view.Container)
-	view.Window.Resize(fyne.NewSize(350, 100))
-	view.Window.CenterOnScreen()
+	view.Container = containerBox
 	return view
 }
 

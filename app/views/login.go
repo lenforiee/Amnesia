@@ -209,5 +209,5 @@ func OnClickLogin(ctx *app.AppContext, password string, loginWindow fyne.Window)
 	}
 
 	view := NewListView(ctx)
-	ctx.UpdateMainWindow(view.Window, view.Size)
+	ctx.UpdateMainWindow(view.Window, view.Size, true)
 }

@@ -106,8 +106,8 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 			return
 		}
 
-		resourceView := NewResourceView(ctx, token.(string), resource)
-		resourceView.Window.Show()
+		resourceView := NewResourceView(ctx, token.(string), resource, view)
+		ctx.UpdateView(resourceView.Title, resourceView.Container)
 
 	}
 	listWidget = list
@@ -162,13 +162,13 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 	refreshBtnWidget = refreshBtn
 
 	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
-		addView := NewResourceAddView(ctx)
+		addView := NewResourceAddView(ctx, view)
 
 		addView.SetOnButtonClickEvent(func() {
 			RefreshListData(ctx)
 		})
 
-		addView.Window.Show()
+		ctx.UpdateView(addView.Title, addView.Container)
 	})
 
 	image := canvas.NewImageFromResource(bundles.ResourceAmnesiaLogoPng)
@@ -199,7 +199,7 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		list,
 	)
 	view.Container = containerBox
-	view.Size = fyne.NewSize(400, 600)
+	view.Size = fyne.NewSize(400, 550)
 
 	view.Window.SetContent(view.Container)
 	view.Window.Resize(view.Size)

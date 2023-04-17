@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"golang.design/x/clipboard"
 
@@ -14,16 +15,16 @@ import (
 )
 
 type ResourceView struct {
-	Window    fyne.Window
+	Title     string
 	Container *fyne.Container
 }
 
-func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.Resource) ResourceView {
+func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.Resource, previousView ListView) ResourceView {
 
-	window := ctx.App.NewWindow(fmt.Sprintf("%s :: View Resource", ctx.AppName))
+	title := fmt.Sprintf("%s :: View Resource", ctx.AppName)
 
 	view := ResourceView{
-		Window: window,
+		Title: title,
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
@@ -94,41 +95,41 @@ func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.R
 	})
 
 	editBtn := widget.NewButton("Edit", func() {
-		view.Window.Close()
 
-		editView := NewResourceEditView(ctx, token, resource)
-		editView.Window.Show()
+		editView := NewResourceEditView(ctx, token, resource, view, previousView)
+		ctx.UpdateView(editView.Title, editView.Container)
 	})
 
-	closeBtn := widget.NewButton("Close", func() {
-		view.Window.Close()
+	goBackBtn := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
+		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
 
 	containerBox := container.New(
-		layout.NewVBoxLayout(),
-		nameLabel,
-		itemName,
-		usernameLabel,
-		itemUsername,
-		uriLabel,
-		itemUri,
-		passwdLabel,
-		itemPasswd,
-		descLabel,
-		itemDesc,
-		container.New(
-			layout.NewGridLayout(2),
-			copyUsername,
-			copyPasswd,
+		layout.NewPaddedLayout(),
+		container.NewVBox(
+			container.NewGridWithColumns(
+				6,
+				goBackBtn,
+			),
+			nameLabel,
+			itemName,
+			usernameLabel,
+			itemUsername,
+			uriLabel,
+			itemUri,
+			passwdLabel,
+			itemPasswd,
+			descLabel,
+			itemDesc,
+			container.New(
+				layout.NewGridLayout(2),
+				copyUsername,
+				copyPasswd,
+			),
+			editBtn,
 		),
-		editBtn,
-		widget.NewSeparator(),
-		closeBtn,
 	)
 	view.Container = containerBox
 
-	view.Window.SetContent(view.Container)
-	view.Window.Resize(fyne.NewSize(350, 100))
-	view.Window.CenterOnScreen()
 	return view
 }
