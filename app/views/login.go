@@ -42,14 +42,17 @@ func NewLoginView(ctx *app.AppContext) LoginView {
 		fyne.TextStyle{Bold: true},
 	)
 	itemUserAgent := widget.NewEntry()
+	itemUserAgent.Disable()
 	itemUserAgent.SetText(ctx.UserSettings.UserAgent)
 
 	checkUserAgent := ctx.UserSettings.UserAgent != ""
 	userAgentEnable := widget.NewCheckWithData("Use Custom User Agent", binding.BindBool(&checkUserAgent))
+
 	userAgentEnable.OnChanged = func(checked bool) {
-		itemUserAgent.Disable()
 		if checked {
 			itemUserAgent.Enable()
+		} else {
+			itemUserAgent.Disable()
 		}
 	}
 
