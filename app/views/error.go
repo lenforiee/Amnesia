@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
 )
 
 type ErrorView struct {
@@ -15,6 +16,7 @@ type ErrorView struct {
 
 func NewErrorView(app fyne.App, appName string, err string, crash bool) ErrorView {
 
+	logger.LogInfo.Printf("Creating new error view with message: %s, crash: %t", err, crash)
 	window := app.NewWindow(fmt.Sprintf("%s :: Error", appName))
 	view := ErrorView{
 		Window: window,

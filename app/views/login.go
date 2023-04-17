@@ -30,6 +30,7 @@ var (
 
 func NewLoginView(ctx *app.AppContext) LoginView {
 
+	logger.LogInfo.Println("Creating new login view")
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Login", ctx.AppName))
 	view := LoginView{
 		Window: window,
@@ -183,6 +184,7 @@ func NewLoginView(ctx *app.AppContext) LoginView {
 }
 
 func OnClickLogin(ctx *app.AppContext, password string, loginWindow fyne.Window) {
+	logger.LogInfo.Println("Login button clicked, trying to log in...")
 	loginBtn.SetText("Logging in...")
 	loginBtn.Disable()
 	if err := passbolt.InitialisePassboltConnector(ctx, password); err != nil {

@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
 	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
 	"github.com/lenforiee/AmnesiaGUI/bundles"
 	"github.com/passbolt/go-passbolt/api"
@@ -27,10 +28,7 @@ func (a *AppContext) InitialiseSystemTray() {
 	desk, ok := a.App.(desktop.App)
 	if ok {
 		item := fyne.NewMenuItem("Show", func() {
-			if !a.PassboltClient.CheckSession(a.Context) {
-				a.PassboltClient.Login(a.Context)
-			}
-
+			logger.LogInfo.Println("Showing main window")
 			a.MainWindow.Show()
 		})
 
@@ -41,6 +39,8 @@ func (a *AppContext) InitialiseSystemTray() {
 }
 
 func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size, centre bool) {
+
+	logger.LogInfo.Println("Updating main window")
 	a.MainWindow.SetTitle(window.Title())
 	a.MainWindow.SetContent(window.Content())
 	a.MainWindow.Resize(size)
@@ -50,6 +50,8 @@ func (a *AppContext) UpdateMainWindow(window fyne.Window, size fyne.Size, centre
 }
 
 func (a *AppContext) UpdateView(title string, content fyne.CanvasObject) {
+
+	logger.LogInfo.Println("Updating view")
 	a.MainWindow.SetTitle(title)
 	a.MainWindow.SetContent(content)
 }

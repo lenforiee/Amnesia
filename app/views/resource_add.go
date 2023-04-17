@@ -27,6 +27,7 @@ type ResourceAddView struct {
 
 func NewResourceAddView(ctx *amnesiaApp.AppContext, previousView ListView) *ResourceAddView {
 
+	logger.LogInfo.Println("Creating new resource add view")
 	title := fmt.Sprintf("%s :: Add Resource", ctx.AppName)
 
 	view := &ResourceAddView{

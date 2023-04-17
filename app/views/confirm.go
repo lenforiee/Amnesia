@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
 )
 
 type ConfirmView struct {
@@ -19,6 +20,7 @@ type ConfirmView struct {
 
 func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 
+	logger.LogInfo.Printf("Creating new confirm view with message: %s", msg)
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Confirm", ctx.AppName))
 	view := &ConfirmView{
 		Window: window,

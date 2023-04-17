@@ -11,6 +11,7 @@ import (
 	"golang.design/x/clipboard"
 
 	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
 	"github.com/lenforiee/AmnesiaGUI/app/models"
 )
 
@@ -21,6 +22,7 @@ type ResourceView struct {
 
 func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.Resource, previousView ListView) ResourceView {
 
+	logger.LogInfo.Printf("Creating new resource view for id %s and name %s", token, resource.Name)
 	title := fmt.Sprintf("%s :: View Resource", ctx.AppName)
 
 	view := ResourceView{
@@ -87,10 +89,12 @@ func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.R
 	itemDesc.Disable()
 
 	copyUsername := widget.NewButton("Copy Username", func() {
+		logger.LogInfo.Printf("Copying resource `%s` username to clipboard", resource.Name)
 		clipboard.Write(clipboard.FmtText, []byte(resource.Username))
 	})
 
 	copyPasswd := widget.NewButton("Copy Password", func() {
+		logger.LogInfo.Printf("Copying resource `%s` password to clipboard", resource.Name)
 		clipboard.Write(clipboard.FmtText, []byte(resource.Password))
 	})
 

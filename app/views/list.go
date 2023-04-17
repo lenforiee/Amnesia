@@ -28,12 +28,12 @@ type ListView struct {
 }
 
 var (
-	protecetedNameList  = []string{}
-	protectedTokenIdMap = make(map[string]interface{})
-	lookupNameList      = binding.NewStringList()
-	lookupTokenMap      = binding.NewUntypedMap()
-
-	formattedNameList = binding.NewStringList()
+	protecetedNameList         = []string{}
+	protectedTokenIdMap        = make(map[string]interface{})
+	protectedFormattedNameList = []string{}
+	lookupNameList             = binding.NewStringList()
+	lookupTokenMap             = binding.NewUntypedMap()
+	formattedNameList          = binding.NewStringList()
 
 	resourcesList []api.Resource
 
@@ -44,6 +44,7 @@ var (
 
 func NewListView(ctx *amnesiaApp.AppContext) ListView {
 
+	logger.LogInfo.Println("Creating new list view")
 	window := ctx.App.NewWindow(fmt.Sprintf("%s :: Account List", ctx.AppName))
 	view := ListView{
 		Window: window,
@@ -62,14 +63,18 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		protecetedNameList = append(protecetedNameList, r.Name)
 		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
 		if r.Username == "" {
-			formattedNameList.Append(r.Name)
+			protectedFormattedNameList = append(protectedFormattedNameList, r.Name)
 		} else {
-			formattedNameList.Append(fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)))
+			protectedFormattedNameList = append(
+				protectedFormattedNameList,
+				fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)),
+			)
 		}
 	}
 
 	lookupNameList.Set(protecetedNameList)
 	lookupTokenMap.Set(protectedTokenIdMap)
+	formattedNameList.Set(protectedFormattedNameList)
 	resourcesList = resources
 
 	list := widget.NewListWithData(formattedNameList,
@@ -117,9 +122,12 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 
 	search.OnChanged = func(s string) {
 
+		logger.LogInfo.Printf("Search query: '%s'", s)
 		if strings.TrimSpace(s) == "" {
+			logger.LogInfo.Print("Search query is empty, resetting list")
 			lookupNameList.Set(protecetedNameList)
 			lookupTokenMap.Set(protectedTokenIdMap)
+			formattedNameList.Set(protectedFormattedNameList)
 			list.Refresh()
 			return
 		}
@@ -152,6 +160,7 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 	searchWidget = search
 
 	hideBtn := widget.NewButton("Hide to tray", func() {
+		logger.LogInfo.Println("Hiding app to tray")
 		ctx.MainWindow.Hide()
 	})
 
@@ -209,6 +218,8 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 }
 
 func RefreshListData(ctx *amnesiaApp.AppContext) {
+
+	logger.LogInfo.Println("Refreshing list data")
 	refreshBtnWidget.Disable()
 	resources, err := passbolt.GetResources(ctx, api.GetResourcesOptions{})
 
@@ -241,7 +252,8 @@ func RefreshListData(ctx *amnesiaApp.AppContext) {
 
 	lookupNameList.Set(protecetedNameList)
 	lookupTokenMap.Set(protectedTokenIdMap)
-	formattedNameList.Set(newFormattedNameList)
+	protectedFormattedNameList = newFormattedNameList
+	formattedNameList.Set(protectedFormattedNameList)
 
 	searchWidget.SetText("")
 	listWidget.Refresh()
