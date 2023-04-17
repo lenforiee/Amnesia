@@ -108,7 +108,6 @@ func NewLoginView(ctx *app.AppContext) LoginView {
 			itemUserAgent.Disable()
 			userAgentEnable.Disable()
 
-			itemPasswd.FocusGained()
 		} else {
 			itemServerURI.Enable()
 			itemPrivateKeyPath.Enable()
@@ -172,6 +171,12 @@ func NewLoginView(ctx *app.AppContext) LoginView {
 	view.Container = containerBox
 
 	view.Window.SetContent(view.Container)
+
+	// gain focus on password field if remember me is checked
+	if ctx.UserSettings.RememberMe {
+		window.Canvas().Focus(itemPasswd)
+	}
+
 	view.Window.Resize(fyne.NewSize(350, 100))
 	view.Window.CenterOnScreen()
 	return view
