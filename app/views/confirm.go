@@ -15,6 +15,7 @@ import (
 type ConfirmView struct {
 	Window    fyne.Window
 	OnYes     func()
+	OnNo      func()
 	Container *fyne.Container
 }
 
@@ -40,6 +41,7 @@ func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 
 	noBtn := widget.NewButton("No", func() {
 		view.Window.Close()
+		view.OnNo()
 	})
 
 	containerBox := container.NewBorder(
@@ -63,4 +65,8 @@ func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 
 func (v *ConfirmView) SetOnYesEvent(callback func()) {
 	v.OnYes = callback
+}
+
+func (v *ConfirmView) SetOnNoEvent(callback func()) {
+	v.OnNo = callback
 }

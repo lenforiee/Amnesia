@@ -91,7 +91,49 @@ func NewResourceEditView(
 
 	asteriskLabel := widget.NewLabel("(*) - Required field.")
 
-	saveBtn := widget.NewButton("Save", func() {
+	saveBtn := widget.NewButton("Save", nil)
+	deleteBtn := widget.NewButton("Delete", nil)
+
+	goBackBtn := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
+		ctx.UpdateView(previousView.Title, previousView.Container)
+	})
+
+	deleteBtn.OnTapped = func() {
+		saveBtn.Disable()
+		deleteBtn.Disable()
+		goBackBtn.Disable()
+
+		confirmView := NewConfirmView(ctx, "Are you sure you want to delete this resource?")
+		confirmView.SetOnYesEvent(func() {
+
+			err := passbolt.DeleteResource(ctx, token)
+			if err != nil {
+				errMsg := fmt.Sprintf("There was error while deleting resource: %s", err)
+				logger.LogErr.Println(errMsg)
+
+				errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+				errView.Window.Show()
+				return
+			}
+
+			// views/list.go
+			RefreshListData(ctx)
+			ctx.UpdateMainWindow(listView.Window, listView.Size, false)
+		})
+
+		confirmView.SetOnNoEvent(func() {
+			saveBtn.Enable()
+			deleteBtn.Enable()
+			goBackBtn.Enable()
+		})
+
+		confirmView.Window.Show()
+	}
+
+	saveBtn.OnTapped = func() {
+		saveBtn.Disable()
+		deleteBtn.Disable()
+		goBackBtn.Disable()
 		saveResource := models.NewResource()
 		saveResource.SetFolderParentID(resource.FolderParentID)
 		saveResource.SetName(itemName.Text)
@@ -113,33 +155,7 @@ func NewResourceEditView(
 		// views/list.go
 		RefreshListData(ctx)
 		ctx.UpdateMainWindow(listView.Window, listView.Size, false)
-	})
-
-	deleteBtn := widget.NewButton("Delete", func() {
-		confirmView := NewConfirmView(ctx, "Are you sure you want to delete this resource?")
-		confirmView.SetOnYesEvent(func() {
-
-			err := passbolt.DeleteResource(ctx, token)
-			if err != nil {
-				errMsg := fmt.Sprintf("There was error while deleting resource: %s", err)
-				logger.LogErr.Println(errMsg)
-
-				errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
-				errView.Window.Show()
-				return
-			}
-
-			// views/list.go
-			RefreshListData(ctx)
-			ctx.UpdateMainWindow(listView.Window, listView.Size, false)
-		})
-
-		confirmView.Window.Show()
-	})
-
-	goBackBtn := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
-		ctx.UpdateView(previousView.Title, previousView.Container)
-	})
+	}
 
 	containerBox := container.New(
 		layout.NewPaddedLayout(),
