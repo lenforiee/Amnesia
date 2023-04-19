@@ -4,7 +4,7 @@
 <hr>
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/lenforiee/Amnesia)](https://goreportcard.com/report/github.com/lenforiee/Amnesia)
-![Version](https://img.shields.io/badge/Version-v0.0.1-blue)
+![Version](https://img.shields.io/badge/Version-v0.1.0-blue)
 
 ## What is Amnesia
 
@@ -14,7 +14,7 @@ Amnesia is a desktop application for the Passbolt password manager! It is:
 - ⚡️**Lightweight and performant**, being written in the Go language.
 - 🛠**Fully open source** and actively maintained.
 
-![Example Screenshots](https://user-images.githubusercontent.com/36131887/219877620-d3c0d9a3-335a-4fc9-ae3d-ff4e72516cd1.png)
+![Example Screenshots](https://cdn.discordapp.com/attachments/769679895298310154/1098390339255025724/Untitled.png)
 
 <hr>
 
@@ -34,6 +34,9 @@ Since Amnesia is an open source project, you may also compile the executables fr
 To do so, you must first download and install the Go compiler. Then it is a matter of running the following commands:
 
 ```sh
+# NOTE: before you start any compilation, make sure 
+# to follow (for fyne compiler): https://developer.fyne.io/started/#prerequisites 
+
 # Clone the repository
 git clone https://github.com/lenforiee/Amnesia
 
@@ -41,12 +44,27 @@ git clone https://github.com/lenforiee/Amnesia
 cd Amnesia
 
 # Download the required modules
-go get
+go mod download
 
-# Compile the project executable
+# Download fyne compiler
+go install fyne.io/fyne/v2/cmd/fyne@latest
+
+# Install GTK+ 3 dependencies
+# required by gcc compiler (linux only)
+sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+# Build to release executable!
+# `windows` compiles for Windows
+# `darwin` compiles for MacOS
+# `linux` compiles for any linux distro
+fyne package -os <windows/darwin/linux> -appID "com.lenforiee.amnesia" -icon "assets/logo.png" -name "amnesia" -release
+
+# OR 
+
+# You can build it to normal golang executable
 go build
 
-# If you building on windows use this command to make console not appear
+# ON WINDOWS (removes debug console)
 go build -ldflags -H=windowsgui
 ```
 
@@ -56,7 +74,7 @@ We only recommend this method for users interested in contributing to the projec
 
 ## Credits
 
-- Thank you @adrplays for a application logo!
+- Thank you [@adrplays](https://github.com/adrplays) for the application logo!
 
 ## Licence
 
