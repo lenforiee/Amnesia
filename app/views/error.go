@@ -22,7 +22,7 @@ func NewErrorView(app fyne.App, appName string, err string, crash bool) ErrorVie
 		Window: window,
 	}
 
-	labelHeader := "Error has occured!"
+	labelHeader := "Error has occurred!"
 	if crash {
 		labelHeader = "Amnesia has crashed!"
 	}

@@ -195,7 +195,7 @@ func OnClickLogin(ctx *app.AppContext, password string, loginWindow fyne.Window)
 		logger.LogErr.Println(errMsg)
 
 		// Passbolt connector is bit weird, so we need to do this to get proper error message.
-		errProperMessage := "Unknown error occured while initialising passbolt client."
+		errProperMessage := "Unknown error occurred while initialising passbolt client."
 		switch {
 		case strings.Contains(err.Error(), "private key checksum failure"):
 			errProperMessage = "Invalid passphrase. Please try again."
