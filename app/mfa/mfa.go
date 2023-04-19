@@ -87,7 +87,7 @@ func NewMFAView(
 	return view
 }
 
-type MFAChallangeResponse struct {
+type MFAChallengeResponse struct {
 	TOTP     string `json:"totp,omitempty"`
 	Remember bool   `json:"remember,omitempty"`
 }
@@ -101,18 +101,18 @@ func VerifyOTPCode(
 	mfaChan chan http.Cookie,
 	mfaErr chan error,
 ) {
-	challange := api.MFAChallange{}
-	err := json.Unmarshal(res.Body, &challange)
+	challenge := api.MFAChallange{} // TODO: update this when my PR gets merged
+	err := json.Unmarshal(res.Body, &challenge)
 	if err != nil {
 		mfaErr <- err
 		return
 	}
-	if challange.Provider.TOTP == "" {
+	if challenge.Provider.TOTP == "" {
 		mfaErr <- fmt.Errorf("server Provided no TOTP Provider")
 		return
 	}
 
-	req := MFAChallangeResponse{
+	req := MFAChallengeResponse{
 		TOTP:     code,
 		Remember: remember,
 	}
