@@ -109,8 +109,13 @@ func main() {
 
 	logger.LogInfo.Print("Setting close intercept...")
 	ctx.MainWindow.SetCloseIntercept(func() {
-		logger.LogInfo.Print("Hidding main window to tray...")
-		ctx.MainWindow.Hide()
+		if ctx.PassboltClient != nil {
+			logger.LogInfo.Print("Hidding main window to tray...")
+			ctx.MainWindow.Hide()
+		} else {
+			logger.LogInfo.Print("Closing main window...")
+			ctx.MainWindow.Close()
+		}
 	})
 	logger.LogInfo.Print("Done!")
 

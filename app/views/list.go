@@ -159,11 +159,6 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 	}
 	searchWidget = search
 
-	hideBtn := widget.NewButton("Hide to tray", func() {
-		logger.LogInfo.Println("Hiding app to tray")
-		ctx.MainWindow.Hide()
-	})
-
 	// create refresh button
 	refreshBtn := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
 		RefreshListData(ctx)
@@ -199,10 +194,7 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 				search,
 			),
 		),
-		container.New(
-			layout.NewVBoxLayout(),
-			hideBtn,
-		),
+		nil,
 		nil,
 		nil,
 		list,
