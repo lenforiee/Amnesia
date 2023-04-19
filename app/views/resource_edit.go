@@ -29,7 +29,7 @@ func NewResourceEditView(
 ) ResourceEditView {
 
 	logger.LogInfo.Printf("Creating new resource edit view for id %s and name %s", token, resource.Name)
-	title := fmt.Sprintf("%s :: Edit Resource", ctx.AppName)
+	title := fmt.Sprintf("%s :: Editing Resource", ctx.AppName)
 
 	view := ResourceEditView{
 		Title: title,

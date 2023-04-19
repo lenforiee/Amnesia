@@ -23,7 +23,7 @@ type ResourceView struct {
 func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.Resource, previousView ListView) ResourceView {
 
 	logger.LogInfo.Printf("Creating new resource view for id %s and name %s", token, resource.Name)
-	title := fmt.Sprintf("%s :: View Resource", ctx.AppName)
+	title := fmt.Sprintf("%s :: Viewing Resource", ctx.AppName)
 
 	view := ResourceView{
 		Title: title,
