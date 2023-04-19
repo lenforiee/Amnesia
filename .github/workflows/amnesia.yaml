@@ -18,15 +18,15 @@ jobs:
           - os: ubuntu-latest
             fyne_os: linux
             artifact_name: amnesia.tar.xz
-            asset_name: amnesia-linux-amd64
+            asset_name: amnesia-linux-amd64.tar.xz
           - os: windows-latest
             fyne_os: windows
             artifact_name: amnesia.exe
-            asset_name: amnesia-windows-amd64
+            asset_name: amnesia-windows-amd64.exe
           - os: macos-latest
             fyne_os: darwin
             artifact_name: amnesia.app
-            asset_name: amnesia-macos-amd64
+            asset_name: amnesia-macos-amd64.app
 
     steps:
       - uses: actions/checkout@v3
