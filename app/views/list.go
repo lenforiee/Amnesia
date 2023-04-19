@@ -40,6 +40,9 @@ var (
 	refreshBtnWidget *widget.Button
 	listWidget       *widget.List
 	searchWidget     *widget.Entry
+
+	noResourcesFoundText = "No resources found"
+	noResources          = false
 )
 
 func NewListView(ctx *amnesiaApp.AppContext) ListView {
@@ -59,17 +62,22 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		errView.Window.Show()
 	}
 
+	noResources = len(resources) == 0
 	for i, r := range resources {
 		protecetedNameList = append(protecetedNameList, r.Name)
 		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
 		if r.Username == "" {
-			protectedFormattedNameList = append(protectedFormattedNameList, r.Name)
+			protectedFormattedNameList = append(protectedFormattedNameList, format.TruncateText(r.Name, 45, false))
 		} else {
 			protectedFormattedNameList = append(
 				protectedFormattedNameList,
-				fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)),
+				format.TruncateText(fmt.Sprintf("%s - (%s)", r.Name, r.Username), 45, true),
 			)
 		}
+	}
+
+	if noResources && len(protectedFormattedNameList) == 0 {
+		protectedFormattedNameList = append(protectedFormattedNameList, noResourcesFoundText)
 	}
 
 	lookupNameList.Set(protecetedNameList)
@@ -81,15 +89,21 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		func() fyne.CanvasObject {
 			label := widget.NewLabel("template")
 			label.TextStyle = fyne.TextStyle{Bold: true}
+			label.Alignment = fyne.TextAlignCenter
 
 			return label
 		},
 		func(i binding.DataItem, o fyne.CanvasObject) {
 			o.(*widget.Label).Bind(i.(binding.String))
-		})
+		},
+	)
 
 	list.OnSelected = func(id widget.ListItemID) {
 		list.Unselect(id)
+
+		if noResources {
+			return
+		}
 
 		token, err := lookupTokenMap.GetValue(strconv.Itoa(id))
 		if err != nil {
@@ -136,16 +150,17 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		var filteredTokenIdMap = make(map[string]interface{})
 		var filteredFormattedNameList = []string{}
 		for _, r := range resourcesList {
+
 			if strings.Contains(strings.ToLower(r.Name), strings.ToLower(s)) {
 				filteredData = append(filteredData, r.Name)
 				filteredTokenIdMap[strconv.Itoa(len(filteredData)-1)] = r.ID
 
 				if r.Username == "" {
-					filteredFormattedNameList = append(filteredFormattedNameList, r.Name)
+					filteredFormattedNameList = append(filteredFormattedNameList, format.TruncateText(r.Name, 45, false))
 				} else {
 					filteredFormattedNameList = append(
 						filteredFormattedNameList,
-						fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)),
+						format.TruncateText(fmt.Sprintf("%s - (%s)", r.Name, r.Username), 45, true),
 					)
 				}
 			}
@@ -158,6 +173,10 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		list.Refresh()
 	}
 	searchWidget = search
+
+	if noResources {
+		search.Disable()
+	}
 
 	// create refresh button
 	refreshBtn := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
@@ -228,18 +247,27 @@ func RefreshListData(ctx *amnesiaApp.AppContext) {
 	resourcesList = resources
 	newFormattedNameList := []string{}
 
+	noResources = len(resourcesList) == 0
 	for i, r := range resourcesList {
 		protecetedNameList = append(protecetedNameList, r.Name)
 		protectedTokenIdMap[strconv.Itoa(i)] = r.ID
 
 		if r.Username == "" {
-			newFormattedNameList = append(newFormattedNameList, r.Name)
+			newFormattedNameList = append(newFormattedNameList, format.TruncateText(r.Name, 45, false))
 		} else {
 			newFormattedNameList = append(
 				newFormattedNameList,
-				fmt.Sprintf("%s - (%s)", r.Name, format.TruncateText(r.Username, 32)),
+				format.TruncateText(fmt.Sprintf("%s - (%s)", r.Name, r.Username), 45, true),
 			)
 		}
+	}
+
+	if noResources && len(newFormattedNameList) == 0 {
+		newFormattedNameList = append(newFormattedNameList, noResourcesFoundText)
+	}
+
+	if !noResources {
+		searchWidget.Enable()
 	}
 
 	lookupNameList.Set(protecetedNameList)

@@ -192,6 +192,7 @@ func InitialisePassboltConnector(ctx *amnesiaApp.AppContext, password string) er
 func GetResources(ctx *amnesiaApp.AppContext, opts api.GetResourcesOptions) ([]api.Resource, error) {
 	EnsureLoggedIn(ctx)
 	logger.LogInfo.Print("Getting resources...")
+
 	resources, err := ctx.PassboltClient.GetResources(ctx.Context, &opts)
 	if err != nil {
 		return nil, err
