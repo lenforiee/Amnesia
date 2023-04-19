@@ -101,7 +101,7 @@ func VerifyOTPCode(
 	mfaChan chan http.Cookie,
 	mfaErr chan error,
 ) {
-	challenge := api.MFAChallange{} // TODO: update this when my PR gets merged
+	challenge := api.MFAChallenge{}
 	err := json.Unmarshal(res.Body, &challenge)
 	if err != nil {
 		mfaErr <- err
