@@ -1,0 +1,43 @@
+name: "publish"
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: amnesia.tar.xz
+            asset_name: amnesia-linux-amd64
+          - os: windows-latest
+            artifact_name: amnesia.exe
+            asset_name: amnesia-windows-amd64
+          - os: macos-latest
+            artifact_name: amnesia.dmg
+            asset_name: amnesia-macos-amd64
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.20
+      - name: Download dependencies
+        run: go mod download
+      - name: Install fyne cmd
+        run: go install fyne.io/fyne/v2/cmd/fyne@latest
+      - name: Build for ${{ matrix.platform }}
+        run: fyne package -os ${{ matrix.platform }} -appID com.lenforiee.amnesia -icon assets/logo.png -name amnesia -release
+      - name: Upload files to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
