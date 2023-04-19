@@ -32,8 +32,8 @@ jobs:
         run: go mod download
       - name: Install fyne cmd
         run: go install fyne.io/fyne/v2/cmd/fyne@latest
-      - name: Build for ${{ matrix.platform }}
-        run: fyne package -os ${{ matrix.platform }} -appID com.lenforiee.amnesia -icon assets/logo.png -name amnesia -release
+      - name: Build for ${{ matrix.os }}
+        run: fyne package -os ${{ matrix.os }} -appID "com.lenforiee.amnesia" -icon "assets/logo.png" -name "amnesia" -release
       - name: Upload files to release
         uses: svenstaro/upload-release-action@v2
         with:
