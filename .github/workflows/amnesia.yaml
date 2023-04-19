@@ -23,7 +23,7 @@ jobs:
             asset_name: amnesia-windows-amd64
           - os: macos-latest
             fyne_os: darwin
-            artifact_name: amnesia.dmg
+            artifact_name: amnesia.app
             asset_name: amnesia-macos-amd64
 
     steps:
@@ -40,7 +40,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf gcc libgl1-mesa-dev xorg-dev
       - name: Build for ${{ matrix.os }}
         run: fyne package -os ${{ matrix.fyne_os }} -appID "com.lenforiee.amnesia" -icon "assets/logo.png" -name "amnesia" -release
       - name: Upload files to release
