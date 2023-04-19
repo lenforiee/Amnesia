@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
-	"github.com/lenforiee/AmnesiaGUI/app/models"
-	"github.com/lenforiee/AmnesiaGUI/app/usecases/aes"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
+	"github.com/lenforiee/Amnesia/app/internals/settings"
+	"github.com/lenforiee/Amnesia/app/models"
+	"github.com/lenforiee/Amnesia/app/usecases/aes"
 	"github.com/passbolt/go-passbolt/helper"
 
-	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
-	"github.com/lenforiee/AmnesiaGUI/app/mfa"
+	amnesiaApp "github.com/lenforiee/Amnesia/app"
+	"github.com/lenforiee/Amnesia/app/mfa"
 	"github.com/passbolt/go-passbolt/api"
 )
 

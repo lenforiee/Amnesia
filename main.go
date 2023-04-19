@@ -11,12 +11,12 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 
-	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
-	"github.com/lenforiee/AmnesiaGUI/app/themes"
-	"github.com/lenforiee/AmnesiaGUI/app/views"
-	"github.com/lenforiee/AmnesiaGUI/bundles"
+	amnesiaApp "github.com/lenforiee/Amnesia/app"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
+	"github.com/lenforiee/Amnesia/app/internals/settings"
+	"github.com/lenforiee/Amnesia/app/themes"
+	"github.com/lenforiee/Amnesia/app/views"
+	"github.com/lenforiee/Amnesia/bundles"
 )
 
 var (

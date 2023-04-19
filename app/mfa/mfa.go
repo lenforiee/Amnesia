@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	amnesiaApp "github.com/lenforiee/Amnesia/app"
 	"github.com/passbolt/go-passbolt/api"
 )
 

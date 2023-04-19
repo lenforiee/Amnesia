@@ -12,11 +12,11 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
-	"github.com/lenforiee/AmnesiaGUI/app/usecases/format"
-	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
-	"github.com/lenforiee/AmnesiaGUI/bundles"
+	amnesiaApp "github.com/lenforiee/Amnesia/app"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
+	"github.com/lenforiee/Amnesia/app/usecases/format"
+	"github.com/lenforiee/Amnesia/app/usecases/passbolt"
+	"github.com/lenforiee/Amnesia/bundles"
 	"github.com/passbolt/go-passbolt/api"
 )
 

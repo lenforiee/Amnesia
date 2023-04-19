@@ -1,4 +1,4 @@
-module github.com/lenforiee/AmnesiaGUI
+module github.com/lenforiee/Amnesia
 
 go 1.20
 

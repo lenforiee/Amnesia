@@ -8,8 +8,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
-	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	amnesiaApp "github.com/lenforiee/Amnesia/app"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
 )
 
 type ConfirmView struct {

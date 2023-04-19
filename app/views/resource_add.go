@@ -9,10 +9,10 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
-	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
-	"github.com/lenforiee/AmnesiaGUI/app/models"
-	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
+	amnesiaApp "github.com/lenforiee/Amnesia/app"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
+	"github.com/lenforiee/Amnesia/app/models"
+	"github.com/lenforiee/Amnesia/app/usecases/passbolt"
 )
 
 type ResourceAddView struct {

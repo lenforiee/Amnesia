@@ -5,7 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
-	"github.com/lenforiee/AmnesiaGUI/bundles"
+	"github.com/lenforiee/Amnesia/bundles"
 )
 
 type ClassicTheme struct {

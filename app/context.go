@@ -5,9 +5,9 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
-	"github.com/lenforiee/AmnesiaGUI/bundles"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
+	"github.com/lenforiee/Amnesia/app/internals/settings"
+	"github.com/lenforiee/Amnesia/bundles"
 	"github.com/passbolt/go-passbolt/api"
 )
 

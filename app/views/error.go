@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/Amnesia/app/internals/logger"
 )
 
 type ErrorView struct {
@@ -24,7 +24,7 @@ func NewErrorView(app fyne.App, appName string, err string, crash bool) ErrorVie
 
 	labelHeader := "Error has occured!"
 	if crash {
-		labelHeader = "AmnesiaGUI has crashed!"
+		labelHeader = "Amnesia has crashed!"
 	}
 
 	errorLabel := widget.NewLabelWithStyle(labelHeader,
