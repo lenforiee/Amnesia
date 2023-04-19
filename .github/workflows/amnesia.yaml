@@ -13,12 +13,15 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
+            fyne_os: linux
             artifact_name: amnesia.tar.xz
             asset_name: amnesia-linux-amd64
           - os: windows-latest
+            fyne_os: windows
             artifact_name: amnesia.exe
             asset_name: amnesia-windows-amd64
           - os: macos-latest
+            fyne_os: darwin
             artifact_name: amnesia.dmg
             asset_name: amnesia-macos-amd64
 
@@ -33,7 +36,7 @@ jobs:
       - name: Install fyne cmd
         run: go install fyne.io/fyne/v2/cmd/fyne@latest
       - name: Build for ${{ matrix.os }}
-        run: fyne package -os ${{ matrix.os }} -appID "com.lenforiee.amnesia" -icon "assets/logo.png" -name "amnesia" -release
+        run: fyne package -os ${{ matrix.fyne_os }} -appID "com.lenforiee.amnesia" -icon "assets/logo.png" -name "amnesia" -release
       - name: Upload files to release
         uses: svenstaro/upload-release-action@v2
         with:
