@@ -6,34 +6,36 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/models"
-	"github.com/lenforiee/AmnesiaGUI/utils/logger"
-	"github.com/lenforiee/AmnesiaGUI/utils/passbolt"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/models"
+	"github.com/lenforiee/AmnesiaGUI/app/usecases/passbolt"
 )
 
-type ResourceAddWindow struct {
-	Window         *fyne.Window
-	Button         *widget.Button
-	OnButtonBefore func()
-	OnButtonError  func()
-	OnButtonClick  func()
-	Container      *fyne.Container
+type ResourceAddView struct {
+	Title string
+
+	// allow us to have some action in view itself.
+	OnButtonClick func()
+
+	Button    *widget.Button
+	Container *fyne.Container
 }
 
-func NewResourceAddWindow(app *contexts.AppContext) *ResourceAddWindow {
+func NewResourceAddView(ctx *amnesiaApp.AppContext, previousView ListView) *ResourceAddView {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: Add Resource", app.AppName))
+	logger.LogInfo.Println("Creating new resource add view")
+	title := fmt.Sprintf("%s :: Adding Resource", ctx.AppName)
 
-	view := &ResourceAddWindow{
-		Window:    &window,
-		Container: nil,
+	view := &ResourceAddView{
+		Title: title,
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
-		"Resource Name(*)",
+		"Resource Name (*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -59,7 +61,7 @@ func NewResourceAddWindow(app *contexts.AppContext) *ResourceAddWindow {
 	itemUri.SetPlaceHolder("eg. https://amazon.com")
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Password(*)",
+		"Password (*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -79,8 +81,6 @@ func NewResourceAddWindow(app *contexts.AppContext) *ResourceAddWindow {
 	asteriskLabel := widget.NewLabel("(*) - Required field.")
 
 	submitBtn := widget.NewButton("Submit", func() {
-
-		(*view).OnButtonBefore()
 
 		var emptyFields []string
 
@@ -102,14 +102,13 @@ func NewResourceAddWindow(app *contexts.AppContext) *ResourceAddWindow {
 			errMsg := fmt.Sprintf("The following fields are empty: \n%sPlease fill them to continue.", bulletPoints)
 			logger.LogErr.Println(errMsg)
 
-			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowAndShow(errView.Window)
-			(*view).OnButtonError()
+			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+			errView.Window.Show()
 			return
 		}
 
-		err := passbolt.CreateResource(app,
-			&models.Resource{
+		err := passbolt.CreateResource(ctx,
+			models.Resource{
 				FolderParentID: "",
 				Name:           itemName.Text,
 				Username:       itemUsername.Text,
@@ -123,41 +122,46 @@ func NewResourceAddWindow(app *contexts.AppContext) *ResourceAddWindow {
 			errMsg := fmt.Sprintf("There was error while adding a resource: %s", err)
 			logger.LogErr.Println(errMsg)
 
-			errView := NewErrorWindow(app, errMsg)
-			app.CreateNewWindowAndShow(errView.Window)
+			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+			errView.Window.Show()
 			return
 		}
-		(*view).OnButtonClick()
 
-		(*view.Window).Close()
+		view.OnButtonClick()
+		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
 	view.Button = submitBtn
 
-	closeBtn := widget.NewButton("Close", func() {
-		(*view.Window).Close()
+	goBackBtn := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
+		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
 
 	containerBox := container.New(
-		layout.NewVBoxLayout(),
-		nameLabel,
-		itemName,
-		usernameLabel,
-		itemUsername,
-		uriLabel,
-		itemUri,
-		passwdLabel,
-		itemPasswd,
-		descLabel,
-		itemDesc,
-		asteriskLabel,
-		submitBtn,
-		widget.NewSeparator(),
-		closeBtn,
+		layout.NewPaddedLayout(),
+		container.NewVBox(
+			container.NewGridWithColumns(
+				6,
+				goBackBtn,
+			),
+			nameLabel,
+			itemName,
+			usernameLabel,
+			itemUsername,
+			uriLabel,
+			itemUri,
+			passwdLabel,
+			itemPasswd,
+			descLabel,
+			itemDesc,
+			asteriskLabel,
+			submitBtn,
+		),
 	)
-	view.Container = containerBox
 
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(fyne.NewSize(350, 100))
-	(*view.Window).CenterOnScreen()
+	view.Container = containerBox
 	return view
+}
+
+func (v *ResourceAddView) SetOnButtonClickEvent(callback func()) {
+	v.OnButtonClick = callback
 }

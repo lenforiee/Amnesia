@@ -6,29 +6,31 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"golang.design/x/clipboard"
 
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/models"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/models"
 )
 
-type ResourceWindow struct {
-	Window    *fyne.Window
+type ResourceView struct {
+	Title     string
 	Container *fyne.Container
 }
 
-func NewResourceWindow(app *contexts.AppContext, token string, resource *models.Resource) *ResourceWindow {
+func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.Resource, previousView ListView) ResourceView {
 
-	window := (*app.App).NewWindow(fmt.Sprintf("%s :: View Resource", app.AppName))
+	logger.LogInfo.Printf("Creating new resource view for id %s and name %s", token, resource.Name)
+	title := fmt.Sprintf("%s :: Viewing Resource", ctx.AppName)
 
-	view := &ResourceWindow{
-		Window:    &window,
-		Container: nil,
+	view := ResourceView{
+		Title: title,
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
-		"Resource Name",
+		"Resource Name (*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -63,7 +65,7 @@ func NewResourceWindow(app *contexts.AppContext, token string, resource *models.
 	itemUri.Disable()
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Password",
+		"Password (*)",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -87,49 +89,54 @@ func NewResourceWindow(app *contexts.AppContext, token string, resource *models.
 	itemDesc.Disable()
 
 	copyUsername := widget.NewButton("Copy Username", func() {
+		logger.LogInfo.Printf("Copying resource `%s` username to clipboard", resource.Name)
 		clipboard.Write(clipboard.FmtText, []byte(resource.Username))
 	})
 
 	copyPasswd := widget.NewButton("Copy Password", func() {
+		logger.LogInfo.Printf("Copying resource `%s` password to clipboard", resource.Name)
 		clipboard.Write(clipboard.FmtText, []byte(resource.Password))
 	})
 
 	editBtn := widget.NewButton("Edit", func() {
-		(*view.Window).Close()
 
-		window := NewResourceEditWindow(app, token, resource)
-		(*app).CreateNewWindowAndShow(window.Window)
+		editView := NewResourceEditView(ctx, token, resource, view, previousView)
+		ctx.UpdateView(editView.Title, editView.Container)
 	})
 
-	closeBtn := widget.NewButton("Close", func() {
-		(*view.Window).Close()
+	goBackBtn := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
+		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
+
+	asteriskLabel := widget.NewLabel("(*) - Required field.")
 
 	containerBox := container.New(
-		layout.NewVBoxLayout(),
-		nameLabel,
-		itemName,
-		usernameLabel,
-		itemUsername,
-		uriLabel,
-		itemUri,
-		passwdLabel,
-		itemPasswd,
-		descLabel,
-		itemDesc,
-		container.New(
-			layout.NewGridLayout(2),
-			copyUsername,
-			copyPasswd,
+		layout.NewPaddedLayout(),
+		container.NewVBox(
+			container.NewGridWithColumns(
+				6,
+				goBackBtn,
+			),
+			nameLabel,
+			itemName,
+			usernameLabel,
+			itemUsername,
+			uriLabel,
+			itemUri,
+			passwdLabel,
+			itemPasswd,
+			descLabel,
+			itemDesc,
+			asteriskLabel,
+			container.New(
+				layout.NewGridLayout(2),
+				copyUsername,
+				copyPasswd,
+			),
+			editBtn,
 		),
-		editBtn,
-		widget.NewSeparator(),
-		closeBtn,
 	)
 	view.Container = containerBox
 
-	(*view.Window).SetContent(view.Container)
-	(*view.Window).Resize(fyne.NewSize(350, 100))
-	(*view.Window).CenterOnScreen()
 	return view
 }

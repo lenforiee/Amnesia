@@ -2,52 +2,123 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net"
+	"os"
+	"runtime/debug"
+	"time"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 
-	"github.com/lenforiee/AmnesiaGUI/bundle"
-	"github.com/lenforiee/AmnesiaGUI/internals/contexts"
-	"github.com/lenforiee/AmnesiaGUI/internals/views"
-	"github.com/lenforiee/AmnesiaGUI/models"
-	"github.com/lenforiee/AmnesiaGUI/utils"
-	"github.com/lenforiee/AmnesiaGUI/utils/logger"
+	amnesiaApp "github.com/lenforiee/AmnesiaGUI/app"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/logger"
+	"github.com/lenforiee/AmnesiaGUI/app/internals/settings"
+	"github.com/lenforiee/AmnesiaGUI/app/themes"
+	"github.com/lenforiee/AmnesiaGUI/app/views"
+	"github.com/lenforiee/AmnesiaGUI/bundles"
 )
 
 var (
 	appName = "Amnesia"
 )
 
+func InitialiseFyneApp() fyne.App {
+	app := app.NewWithID("com.lenforiee.amnesia")
+	app.Settings().SetTheme(themes.ClassicThemeDark())
+	app.SetIcon(bundles.ResourceLogoPng)
+
+	return app
+}
+
 func main() {
+
 	logger.InitialiseLogging("logs.log")
-	logger.LogInfo.Printf("Initialised logger!")
+	logger.LogInfo.Print("Initialised logger!")
 
-	if err := utils.CheckPidFile(); err != nil {
-		logger.LogErr.Printf("Error checking pid file: %s", err)
-		return
+	logger.LogInfo.Print("Initialising Amnesia app...")
+	app := InitialiseFyneApp()
+	logger.LogInfo.Print("Done!")
+
+	defer func() {
+		if r := recover(); r != nil {
+			for _, win := range app.Driver().AllWindows() {
+				logger.LogWarn.Printf("Closing window: %s", win.Title())
+				win.Close()
+			}
+			logger.LogErr.Printf("Program has crashed: %s", string(debug.Stack()))
+			errorView := views.NewErrorView(
+				app, appName,
+				fmt.Sprintf("Please, report this issue to the developer.\nError: %s", r),
+				true, // Crash.
+			)
+			errorView.Window.ShowAndRun()
+		}
+	}()
+
+	ctx := amnesiaApp.NewAppContext()
+	ctx.SetAppName(appName)
+
+	// checks if port is already occupied (one-instance check)
+	logger.LogInfo.Print("Checking if one instance is already running...")
+	conn, _ := net.DialTimeout("tcp", "127.0.0.1:44557", time.Second*1)
+	if conn != nil {
+		mainView := views.NewErrorView(
+			app, appName,
+			"Amnesia is already running!\nPlease, close the previous instance of Amnesia and try again.",
+			false, // Not a crash.
+		)
+		logger.LogErr.Print("Fail: Amnesia is already running!")
+		mainView.Window.ShowAndRun()
+		os.Exit(1)
 	}
+	logger.LogInfo.Print("Done!")
 
-	if err := utils.NewPidFile(); err != nil {
-		logger.LogErr.Printf("Error creating pid file: %s", err)
-		return
+	// initialises a listener on port 44557
+	logger.LogInfo.Print("Initialising a port listener...")
+	listener, err := net.Listen("tcp", "127.0.0.1:44557")
+	if err != nil {
+		panic(err.Error()) // Error handler will catch it.
 	}
+	logger.LogInfo.Print("Done!")
+	defer listener.Close()
 
-	logger.LogInfo.Printf("Initialising Amnesia app...")
-	app := app.New()
-	app.Settings().SetTheme(&models.Theme{})
-	app.SetIcon(bundle.ResourceAssetsImagesLogoPng)
+	ctx.SetApp(app)
 
-	mainWindow := app.NewWindow(appName)
-	mainWindow.SetMaster()
+	logger.LogInfo.Print("Initialising connector context...")
 	context := context.TODO()
+	ctx.SetContext(context)
+	logger.LogInfo.Print("Done!")
 
-	appContext := contexts.NewAppContext(appName, &app, &mainWindow, &context)
-	appContext.LoadConfig()
-	appContext.InitialiseSystemTray(bundle.ResourceAssetsImagesLogoPng)
+	logger.LogInfo.Print("Loading user settings...")
+	cfg, err := settings.LoadUserSettings()
+	if err != nil {
+		panic(err.Error())
+	}
+	ctx.SetUserSettings(cfg)
+	logger.LogInfo.Print("Done!")
 
-	window, size := views.NewLoginWindow(appContext)
-	appContext.UpdateMainWindow(window.Window, size)
-	logger.LogInfo.Printf("App initialised!")
+	logger.LogInfo.Print("Initialising main view...")
+	mainView := views.NewLoginView(&ctx)
+	ctx.SetMainWindow(mainView.Window)
+	logger.LogInfo.Print("Done!")
 
-	appContext.StartMainWindow()
-	utils.RemovePidFile()
+	logger.LogInfo.Print("Initialising system tray...")
+	ctx.InitialiseSystemTray()
+	logger.LogInfo.Print("Done!")
+
+	logger.LogInfo.Print("Setting close intercept...")
+	ctx.MainWindow.SetCloseIntercept(func() {
+		if ctx.PassboltClient != nil {
+			logger.LogInfo.Print("Hidding main window to tray...")
+			ctx.MainWindow.Hide()
+		} else {
+			logger.LogInfo.Print("Closing main window...")
+			ctx.MainWindow.Close()
+		}
+	})
+	logger.LogInfo.Print("Done!")
+
+	logger.LogInfo.Print("App initialised!")
+	ctx.MainWindow.ShowAndRun()
 }
