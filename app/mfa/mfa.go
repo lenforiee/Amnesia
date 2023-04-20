@@ -63,20 +63,23 @@ func NewMFAView(
 		VerifyOTPCode(ctxResp, c, res, mfaCode.Text, rememberCheck.Checked, mfaChan, mfaErr)
 	})
 
-	containerBox := container.NewBorder(
-		mfaLabel,
-		container.New(
-			layout.NewVBoxLayout(),
-			mfaCode,
-			rememberCheck,
-			widget.NewSeparator(),
-			mfaBtn,
-		),
-		nil,
-		nil,
-		container.New(
-			layout.NewVBoxLayout(),
-			mfaText,
+	containerBox := container.New(
+		layout.NewPaddedLayout(),
+		container.NewBorder(
+			mfaLabel,
+			container.New(
+				layout.NewVBoxLayout(),
+				mfaCode,
+				rememberCheck,
+				widget.NewSeparator(),
+				mfaBtn,
+			),
+			nil,
+			nil,
+			container.New(
+				layout.NewVBoxLayout(),
+				mfaText,
+			),
 		),
 	)
 	view.Container = containerBox
