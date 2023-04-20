@@ -134,6 +134,36 @@ func NewResourceEditView(
 		saveBtn.Disable()
 		deleteBtn.Disable()
 		goBackBtn.Disable()
+
+		var emptyFields []string
+
+		if itemName.Text == "" {
+			emptyFields = append(emptyFields, "Resource Name")
+		}
+
+		if itemPasswd.Text == "" {
+			emptyFields = append(emptyFields, "Password")
+		}
+
+		if len(emptyFields) > 0 {
+
+			bulletPoints := ""
+			for _, field := range emptyFields {
+				bulletPoints += fmt.Sprintf(" • %s\n", field)
+			}
+
+			errMsg := fmt.Sprintf("The following fields are empty: \n%sPlease fill them to continue.", bulletPoints)
+			logger.LogErr.Println(errMsg)
+
+			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
+			errView.Window.Show()
+
+			saveBtn.Enable()
+			deleteBtn.Enable()
+			goBackBtn.Enable()
+			return
+		}
+
 		saveResource := models.NewResource()
 		saveResource.SetFolderParentID(resource.FolderParentID)
 		saveResource.SetName(itemName.Text)
@@ -149,6 +179,10 @@ func NewResourceEditView(
 
 			errView := NewErrorView(ctx.App, ctx.AppName, errMsg, false)
 			errView.Window.Show()
+
+			saveBtn.Enable()
+			deleteBtn.Enable()
+			goBackBtn.Enable()
 			return
 		}
 
