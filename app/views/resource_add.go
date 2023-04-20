@@ -139,10 +139,6 @@ func NewResourceAddView(ctx *amnesiaApp.AppContext, previousView ListView) *Reso
 	containerBox := container.New(
 		layout.NewPaddedLayout(),
 		container.NewVBox(
-			container.NewGridWithColumns(
-				6,
-				goBackBtn,
-			),
 			nameLabel,
 			itemName,
 			usernameLabel,
@@ -155,6 +151,8 @@ func NewResourceAddView(ctx *amnesiaApp.AppContext, previousView ListView) *Reso
 			itemDesc,
 			asteriskLabel,
 			submitBtn,
+			widget.NewSeparator(),
+			goBackBtn,
 		),
 	)
 

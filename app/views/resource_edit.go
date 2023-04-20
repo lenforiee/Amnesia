@@ -160,10 +160,6 @@ func NewResourceEditView(
 	containerBox := container.New(
 		layout.NewPaddedLayout(),
 		container.NewVBox(
-			container.NewGridWithColumns(
-				6,
-				goBackBtn,
-			),
 			nameLabel,
 			itemName,
 			usernameLabel,
@@ -177,6 +173,8 @@ func NewResourceEditView(
 			asteriskLabel,
 			saveBtn,
 			deleteBtn,
+			widget.NewSeparator(),
+			goBackBtn,
 		),
 	)
 

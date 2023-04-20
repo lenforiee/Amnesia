@@ -30,7 +30,7 @@ func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.R
 	}
 
 	nameLabel := widget.NewLabelWithStyle(
-		"Resource Name (*)",
+		"Resource Name",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -65,7 +65,7 @@ func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.R
 	itemUri.Disable()
 
 	passwdLabel := widget.NewLabelWithStyle(
-		"Password (*)",
+		"Password",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -108,15 +108,9 @@ func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.R
 		ctx.UpdateMainWindow(previousView.Window, previousView.Size, false)
 	})
 
-	asteriskLabel := widget.NewLabel("(*) - Required field.")
-
 	containerBox := container.New(
 		layout.NewPaddedLayout(),
 		container.NewVBox(
-			container.NewGridWithColumns(
-				6,
-				goBackBtn,
-			),
 			nameLabel,
 			itemName,
 			usernameLabel,
@@ -127,13 +121,15 @@ func NewResourceView(ctx *amnesiaApp.AppContext, token string, resource models.R
 			itemPasswd,
 			descLabel,
 			itemDesc,
-			asteriskLabel,
+			widget.NewSeparator(),
 			container.New(
 				layout.NewGridLayout(2),
 				copyUsername,
 				copyPasswd,
 			),
 			editBtn,
+			widget.NewSeparator(),
+			goBackBtn,
 		),
 	)
 	view.Container = containerBox
