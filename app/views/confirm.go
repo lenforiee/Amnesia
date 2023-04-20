@@ -26,13 +26,14 @@ func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 	view := &ConfirmView{
 		Window: window,
 	}
-	errorLabel := widget.NewLabelWithStyle("Warning!",
+	warningLabel := widget.NewLabelWithStyle("Warning!",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
 
-	errorInfo := widget.NewLabel(msg)
-	errorInfo.Wrapping = fyne.TextWrapWord
+	warningInfo := widget.NewLabel(msg)
+	warningInfo.Alignment = fyne.TextAlignCenter
+	warningInfo.Wrapping = fyne.TextWrapWord
 
 	yesBtn := widget.NewButton("Yes", func() {
 		view.Window.Close()
@@ -45,7 +46,7 @@ func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 	})
 
 	containerBox := container.NewBorder(
-		errorLabel,
+		warningLabel,
 		container.New(
 			layout.NewGridLayout(2),
 			yesBtn,
@@ -53,7 +54,7 @@ func NewConfirmView(ctx *amnesiaApp.AppContext, msg string) *ConfirmView {
 		),
 		nil,
 		nil,
-		errorInfo,
+		warningInfo,
 	)
 	view.Container = containerBox
 
