@@ -141,33 +141,36 @@ func NewLoginView(ctx *app.AppContext) LoginView {
 	image := canvas.NewImageFromResource(bundles.ResourceAmnesiaLogoPng)
 	image.FillMode = canvas.ImageFillOriginal
 
-	containerBox := container.NewBorder(
-		image,
-		container.New(
-			layout.NewVBoxLayout(),
-			loginButton,
-		),
-		nil,
-		nil,
-		container.New(
-			layout.NewVBoxLayout(),
-			userAgentLabel,
-			itemUserAgent,
-			userAgentEnable,
-			widget.NewSeparator(),
-			serverURILabel,
-			itemServerURI,
-			privateKeyPathLabel,
-			container.NewBorder(
-				nil,
-				nil,
-				nil,
-				dialogBtn,
-				itemPrivateKeyPath,
+	containerBox := container.New(
+		layout.NewPaddedLayout(),
+		container.NewBorder(
+			image,
+			container.New(
+				layout.NewVBoxLayout(),
+				loginButton,
 			),
-			passwdLabel,
-			itemPasswd,
-			rememberInfo,
+			nil,
+			nil,
+			container.New(
+				layout.NewVBoxLayout(),
+				userAgentLabel,
+				itemUserAgent,
+				userAgentEnable,
+				widget.NewSeparator(),
+				serverURILabel,
+				itemServerURI,
+				privateKeyPathLabel,
+				container.NewBorder(
+					nil,
+					nil,
+					nil,
+					dialogBtn,
+					itemPrivateKeyPath,
+				),
+				passwdLabel,
+				itemPasswd,
+				rememberInfo,
+			),
 		),
 	)
 

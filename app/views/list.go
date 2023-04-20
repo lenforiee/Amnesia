@@ -199,18 +199,21 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 
 	containerBox := container.NewBorder(
 		container.New(
-			layout.NewVBoxLayout(),
-			image,
-			container.NewBorder(
-				nil,
-				nil,
-				nil,
-				container.New(
-					layout.NewGridLayout(2),
-					addBtn,
-					refreshBtn,
+			layout.NewPaddedLayout(),
+			container.New(
+				layout.NewVBoxLayout(),
+				image,
+				container.NewBorder(
+					nil,
+					nil,
+					nil,
+					container.New(
+						layout.NewGridLayout(2),
+						addBtn,
+						refreshBtn,
+					),
+					search,
 				),
-				search,
 			),
 		),
 		nil,
@@ -219,7 +222,7 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		list,
 	)
 	view.Container = containerBox
-	view.Size = fyne.NewSize(400, 550)
+	view.Size = fyne.NewSize(400, 580)
 
 	view.Window.SetContent(view.Container)
 	view.Window.Resize(view.Size)
