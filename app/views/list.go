@@ -151,7 +151,7 @@ func NewListView(ctx *amnesiaApp.AppContext) ListView {
 		var filteredFormattedNameList = []string{}
 		for _, r := range resourcesList {
 
-			if strings.Contains(strings.ToLower(r.Name), strings.ToLower(s)) {
+			if strings.Contains(strings.ToLower(r.Name), strings.ToLower(s)) || strings.Contains(strings.ToLower(r.Username), strings.ToLower(s)) {
 				filteredData = append(filteredData, r.Name)
 				filteredTokenIdMap[strconv.Itoa(len(filteredData)-1)] = r.ID
 
