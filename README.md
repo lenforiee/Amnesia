@@ -6,6 +6,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/lenforiee/Amnesia)](https://goreportcard.com/report/github.com/lenforiee/Amnesia)
 ![Version](https://img.shields.io/badge/Version-v0.1.0-blue)
 
+**Not maintained anymore**
+
 ## What is Amnesia
 
 Amnesia is a desktop application for the Passbolt password manager! It is:
